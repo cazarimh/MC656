@@ -1,7 +1,7 @@
 import re
 from fastapi import HTTPException, status
 
-def validate_password_strenght(password: str):
+def validate_password_strength(password: str):
     '''
     Verifica a validade da senha baseada nos critérios abaixo:
     - Conter ao menos 8 caracteres
