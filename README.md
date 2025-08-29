@@ -14,7 +14,8 @@ O projeto consiste no desenvolvimento de um sistema digital voltado para auxilia
 1. Navegue até a pasta do backend: `cd backend`
 2. Crie e ative um ambiente virtual: `python -m venv venv` e `source venv/Scripts/activate`
 3. Instale as dependências: `pip install -r requirements.txt`
-4. Rode o servidor: `uvicorn main:app --reload`
+4. Volte ao diretório raiz do projeto `cd ..`
+5. Rode o servidor: `uvicorn backend.main:app --reload`
 
 ### Frontend
 
