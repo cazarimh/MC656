@@ -40,7 +40,7 @@ def validate_password_strength(password: str):
     if not re.search(r"\d", password):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A senha deve conter ao menos um número.",
+            detail="A senha deve conter ao menos um dígito.",
         )
 
     if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
