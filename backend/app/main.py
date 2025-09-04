@@ -1,9 +1,10 @@
 from app.api.routes.expenseRoute import router as expenseRouter
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from models import UserCreate, UserOut
-from password_hash import get_password_hash
-from validators import validate_email_format, validate_password_strength
+from app.models.userCreate import UserCreate
+from app.models.userOut import UserOut
+from app.utils.password_hash import get_password_hash
+from app.utils.validators import validate_email_format, validate_password_strength
 
 app = FastAPI()
 
