@@ -31,5 +31,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: 4. Rodar Testes Automatizados (Etapa de Teste)
+        env:
+          EXPENSES_DATA_PATH: app/utils/data/expenses.json
         run: |
           pytest
