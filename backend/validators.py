@@ -1,4 +1,5 @@
 import re
+from datetime import datetime as dt
 from fastapi import HTTPException, status
 
 def validate_password_strength(password: str):
@@ -74,3 +75,27 @@ def validate_email_format(email: str):
 
     # Retorna nulo caso o email seja válido
     return None
+
+def validate_date_ISO_format(date: str):
+    '''
+    Verifica se a data cadastrada segue o formato válido (ISO String)
+
+    Parâmetros:
+    date (string): string da data informada pelo usuário
+
+    Retorna:
+    None
+
+    Levanta:
+    HTTPException: se o formato da data for inválido
+    '''
+    try:
+        dt.fromisoformat(date)
+        
+        # Retorna nulo cado a data seja válida
+        return None
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="O formato da data informada é inválido.",
+        )
