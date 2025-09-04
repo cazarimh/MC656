@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "user_id": 123,
+    "title": "Grocery Shopping",
+    "amount": 85.50,
+    "category": "Food",
+    "date": "2024-01-15T10:30:00",
+    "description": "Weekly grocery shopping at local supermarket"
+  },
+  {
+    "id": 2,
+    "user_id": 123,
+    "title": "Gas Station",
+    "amount": 45.00,
+    "category": "Transportation",
+    "date": "2024-01-16T08:15:00",
+    "description": "Fill up car tank"
+  },
+  {
+    "id": 3,
+    "user_id": 456,
+    "title": "Restaurant Dinner",
+    "amount": 65.75,
+    "category": "Food",
+    "date": "2024-01-16T19:30:00",
+    "description": "Dinner with friends at Italian restaurant"
+  },
+  {
+    "id": 4,
+    "user_id": 123,
+    "title": "Phone Bill",
+    "amount": 89.99,
+    "category": "Utilities",
+    "date": "2024-01-17T12:00:00",
+    "description": "Monthly phone service payment"
+  },
+  {
+    "id": 5,
+    "user_id": 456,
+    "title": "Coffee Shop",
+    "amount": 12.50,
+    "category": "Food",
+    "date": "2024-01-18T07:45:00",
+    "description": "Morning coffee and pastry"
+  }
+]
