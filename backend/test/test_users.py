@@ -1,6 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
+import os
+from dotenv import load_dotenv
 
+load_dotenv()  
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  
+os.environ["EXPENSES_DATA_PATH"] = os.path.join(BASE_DIR, "app/utils/data/expenses.json")
 from app.main import app, dict_db
 
 client = TestClient(app)
