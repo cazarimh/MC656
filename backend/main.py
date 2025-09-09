@@ -9,7 +9,7 @@ from .utils.validators import validate_email_format, validate_password_strength,
 app = FastAPI()
 
 # "Banco de Dados" em memória (apenas para testes)
-dict_db = {}
+users_db = {}
 user_id = 0
 
 @app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED)
@@ -37,7 +37,7 @@ def create_user(user_data: UserCreate):
     validate_password_strength(user_data.password)
 
     # Verifica se o email já existe no "banco"
-    for user in dict_db.values():
+    for user in users_db.values():
         if user["email"] == user_data.email:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -54,7 +54,7 @@ def create_user(user_data: UserCreate):
     user_id += 1
 
     # Armazena o novo usuário no dicionário
-    dict_db[new_user["id"]] = new_user
+    users_db[new_user["id"]] = new_user
 
     # Retorna os dados do usuário, seguindo o modelo User definido em models
     return new_user
@@ -87,9 +87,9 @@ def create_expense(user: User, expense: ExpenseCreate):
     '''
     global expenses_id
 
-    if (user.id in dict_db):
+    if (user.id in users_db):
 
-        stored_user = dict_db[user.id]
+        stored_user = users_db[user.id]
 
         if stored_user["email"] != user.email:
             raise HTTPException(
@@ -130,3 +130,34 @@ def create_expense(user: User, expense: ExpenseCreate):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuário não cadastrado. Cadastre-se antes de registrar um gasto."
         )
+
+@app.get("/users/{user_id}/expenses", response_model=list[Expense])
+def get_expenses_by_user(user_id: int):
+    '''
+    Lista todos os gastos de um usuário específico
+
+    Parâmetros:
+    user_id (int): inteiro representando o id do usuário que queremos consultar os gastos
+
+    Retorna:
+    list[Expense]: uma list contendo todos os gatos do usuário
+    Obs: retorna uma lista vazia caso o usuário não tenha nenhum gasto registrado
+
+    Levanta:
+    HTTPException:
+        - 404 NOT FOUND se o usuário com o ID fornecido não foe encontrado
+    '''
+
+    # Verifica se o usuário existe
+    if user_id not in users_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Usuário com ID {user_id} não encontrado."
+        )
+
+    user_expenses = []
+    for expense in expenses_db.values():    # Para cada gasto cadastrado adiciona apenas do usuário desejado
+        if expense["user_id"] == user_id:
+            user_expenses.append(expense)
+        
+    return user_expenses
