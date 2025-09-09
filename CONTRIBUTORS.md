@@ -2,4 +2,3 @@
 * Henrique Cazarim Meirelles Alves (RA244763)
 * Luiz Felipe Lenharo  (RA237896)
 * Gustavo Marcelino Rodrigues  (RA238183)
-* Nome do Fulano  (RAXXXXX)
