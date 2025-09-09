@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, status
-from .models import UserCreate, UserOut, Expense
+from .models import UserCreate, UserOut, ExpenseCreate, Expense
 from .password_hash import get_password_hash
 from .validators import validate_email_format, validate_password_strength, validate_date_ISO_format
 
@@ -60,23 +60,24 @@ def create_user(user_data: UserCreate):
 expenses_db = {}
 expenses_id = 0
 
-@app.post("/", response_model=Expense, status_code=status.HTTP_201_CREATED)
-def create_expense(user: UserOut, category: str, date: str, value: float):
+@app.post("/expenses", response_model=Expense, status_code=status.HTTP_201_CREATED)
+def create_expense(user: UserOut, expense: ExpenseCreate):
     '''
     Criação de um novo gasto no sistema
 
     Parâmetros:
     user (UserOut): objeto contendo o ID e o email do usuário cadastrado
-    category: string contendo a categoria do gasto a ser cadastrado [Alimentação, Lazer, Contas]
-    date: string contendo a data do gasto. Deve estar em ISO String
-    value: float contendo o valor do gasto. Deve ser maior que zero
+    expense (ExpenseCreate): objeto contendo os dados para criação para os gastos
+        - category: string contendo a categoria do gasto a ser cadastrado [Alimentação; Lazer; Contas]
+        - date: string contendo a data do gasto. Deve estar em ISO String
+        - value: float contendo o valor do gasto. Deve ser maior que zero
 
     Retorna:
     Expense: objeto contendo o ID, categoria, data e valor do gasto cadastrado, bem como o ID do usuário atrelado a ele
 
     Levanta:
     HTTPException:
-        - 400 BAD REQUEST se a categoria informada não estiver entre [Alimentação, Lazer, Contas]
+        - 400 BAD REQUEST se a categoria informada não estiver entre [Alimentação; Lazer; Contas]
         - 400 BAD REQUEST se o valor informado for menor ou igual a zero
         - 400 BAD REQUEST se o formato da data informada não estiver em ISO String
         - 403 FORBIDDEN se o usuário não estiver cadastrado
@@ -84,28 +85,29 @@ def create_expense(user: UserOut, category: str, date: str, value: float):
     global expenses_id
 
     if (user.id in dict_db):
-        if (category != "Alimentação" and category != "Lazer" and category != "Contas"):
+        valid_categories = ["Alimentação", "Lazer", "Contas"]
+        if (expense.category not in valid_categories):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Categoria informada é inválida."
+                detail="Categoria informada é inválida. Informe uma entre [Alimentação; Lazer; Contas]."
             )
 
-        if (value <= 0):
+        if (expense.value <= 0):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Valor informado é inválido."
+                detail="Valor informado é inválido. Informe um valor maior ou igual a zero."
             )
         
         # Valida se a data está em formato ISO String
-        validate_date_ISO_format(date)
+        validate_date_ISO_format(expense.date)
         
         expenses_id += 1
         new_expense = {
             "id": expenses_id,
             "user_id": user.id,
-            "category": category,
-            "date": date,
-            "value": value
+            "category": expense.category,
+            "date": expense.date,
+            "value": expense.value
         }
 
         expenses_db[new_expense["id"]] = new_expense

@@ -8,6 +8,11 @@ class UserOut(BaseModel):
     id: int
     email: str
 
+class ExpenseCreate(BaseModel):
+    category: str
+    date: str
+    value: float
+
 class Expense(BaseModel):
     id: int
     user_id: int

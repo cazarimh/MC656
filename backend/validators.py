@@ -87,15 +87,26 @@ def validate_date_ISO_format(date: str):
     None
 
     Levanta:
-    HTTPException: se o formato da data for inválido
+    HTTPException: se o formato da data for inválido ou se a data informada for no futuro
     '''
     try:
-        dt.fromisoformat(date)
-        
-        # Retorna nulo cado a data seja válida
-        return None
+        validation_date = dt.fromisoformat(date)
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="O formato da data informada é inválido.",
+            detail="O formato da data informada é inválido. O formato esperado é YYYY-MM-DD (ou outro no formato ISO)",
         )
+    
+    if (validation_date.tzinfo == None):
+        today = dt.now()
+    else:
+        today = dt.now(tz=validation_date.tzinfo)
+    
+    if (validation_date > today):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A data informada é no futuro. Informe uma data até o dia atual.",
+        )
+    
+    # Retorna nulo cado a data seja válida
+    return None
