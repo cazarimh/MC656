@@ -1,7 +1,10 @@
 from fastapi import FastAPI, HTTPException, status
-from .models import UserCreate, UserOut, ExpenseCreate, Expense
-from .password_hash import get_password_hash
-from .validators import validate_email_format, validate_password_strength, validate_date_ISO_format
+from .models.userCreate import UserCreate
+from .models.user import User
+from .models.expenseCreate import ExpenseCreate
+from .models.expense import Expense
+from .utils.password_hash import get_password_hash
+from .utils.validators import validate_email_format, validate_password_strength, validate_date_ISO_format
 
 app = FastAPI()
 
@@ -9,7 +12,7 @@ app = FastAPI()
 dict_db = {}
 user_id = 0
 
-@app.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+@app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED)
 def create_user(user_data: UserCreate):
     '''
     Criação de um novo usuário no sistema
@@ -18,7 +21,7 @@ def create_user(user_data: UserCreate):
     user_data (UserCreate): objeto contendo os dados do usuário, incluindo email e senha
 
     Retorna:
-    UserOut: objeto contendo o ID e o email do usuário cadastrado
+    User: objeto contendo o ID e o email do usuário cadastrado
 
     Levanta:
     HTTPException:
@@ -53,7 +56,7 @@ def create_user(user_data: UserCreate):
     # Armazena o novo usuário no dicionário
     dict_db[new_user["id"]] = new_user
 
-    # Retorna os dados do usuário, seguindo o modelo UserOut definido em models
+    # Retorna os dados do usuário, seguindo o modelo User definido em models
     return new_user
 
 # "Banco de Dados" de um usuário X em memória (apenas para testes)
@@ -61,12 +64,12 @@ expenses_db = {}
 expenses_id = 0
 
 @app.post("/expenses", response_model=Expense, status_code=status.HTTP_201_CREATED)
-def create_expense(user: UserOut, expense: ExpenseCreate):
+def create_expense(user: User, expense: ExpenseCreate):
     '''
     Criação de um novo gasto no sistema
 
     Parâmetros:
-    user (UserOut): objeto contendo o ID e o email do usuário cadastrado
+    user (User): objeto contendo o ID e o email do usuário cadastrado
     expense (ExpenseCreate): objeto contendo os dados para criação para os gastos
         - category: string contendo a categoria do gasto a ser cadastrado [Alimentação; Lazer; Contas]
         - date: string contendo a data do gasto. Deve estar em ISO String
