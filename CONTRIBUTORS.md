@@ -1,5 +1,5 @@
 * Mateus Farha RIbeiro (RA252678)
 * Henrique Cazarim Meirelles Alves (RA244763)
 * Luiz Felipe Lenharo  (RA237896)
-* Nome do Fulano  (RAXXXXX)
+* Gustavo Marcelino Rodrigues  (RA238183)
 * Nome do Fulano  (RAXXXXX)
