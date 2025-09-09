@@ -46,12 +46,12 @@ def create_user(user_data: UserCreate):
     
     # Gera o hash da senha para não armazenar a senha original
     hashed_password = get_password_hash(user_data.password)
-    user_id += 1
     new_user = {
         "id": user_id,
         "email": user_data.email,
         "hashed_password": hashed_password 
     }
+    user_id += 1
 
     # Armazena o novo usuário no dicionário
     dict_db[new_user["id"]] = new_user
@@ -88,6 +88,15 @@ def create_expense(user: User, expense: ExpenseCreate):
     global expenses_id
 
     if (user.id in dict_db):
+
+        stored_user = dict_db[user.id]
+
+        if stored_user["email"] != user.email:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="As credenciais do usuário (ID e Email) não correspondem."
+            )
+ 
         valid_categories = ["Alimentação", "Lazer", "Contas"]
         if (expense.category not in valid_categories):
             raise HTTPException(
@@ -100,11 +109,10 @@ def create_expense(user: User, expense: ExpenseCreate):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Valor informado é inválido. Informe um valor maior ou igual a zero."
             )
-        
+
         # Valida se a data está em formato ISO String
         validate_date_ISO_format(expense.date)
         
-        expenses_id += 1
         new_expense = {
             "id": expenses_id,
             "user_id": user.id,
@@ -112,6 +120,7 @@ def create_expense(user: User, expense: ExpenseCreate):
             "date": expense.date,
             "value": expense.value
         }
+        expenses_id += 1
 
         expenses_db[new_expense["id"]] = new_expense
 

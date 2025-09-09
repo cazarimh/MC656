@@ -46,7 +46,7 @@ def test_registered_user():
     # Verifica se os campos correspondem ao informado
     assert response.status_code == 201
     data = response.json()
-    assert data["id"] > 0
+    assert data["id"] >= 0
     assert data["user_id"] == mock_user["id"]
     assert data["category"] == "Lazer"
     assert data["date"] == "2025-04-20"
@@ -90,6 +90,24 @@ def test_none_user():
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 422
     assert response.json() == {"detail": [{"input": None,"loc": ["body", "user"], "msg": "Field required", "type": "missing"}]}
+
+def test_wrong_email():
+    '''
+    Testa se o sistema retorna um erro na criação de um gasto com o email de um usuário existente incorreto
+    '''
+    response = client.post(
+        "/expenses",
+        json={
+            "user": {"id": mock_user["id"], "email": "emaildifferent@email.com"},
+            "expense": {
+                "category": "Lazer",
+                "date": "2025-01-01",
+                "value": 422}
+            }
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {"detail": "As credenciais do usuário (ID e Email) não correspondem."}
 
 ###################     TESTES DE CATEGORIA ###################
 
