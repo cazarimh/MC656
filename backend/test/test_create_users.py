@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from backend.main import app, dict_db, user_id as main_user_id
+from backend.main import app, users_db, user_id as main_user_id
 
 client = TestClient(app)
 
@@ -10,7 +10,7 @@ def reset_dict_before_test():
     Limpa o dicionário ("banco de dados" em memória) antes de realizar os testes
     '''
     global main_user_id
-    dict_db.clear()
+    users_db.clear()
     main_user_id = 0
 
 def test_create_user_sucess():
