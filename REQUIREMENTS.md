@@ -140,17 +140,3 @@ _Figura 18 – Mensagem de Erro_
 _Figura 19 – Seção para Criação de Contas_
 
 ![AbaCriacaoConta](images/organizze/criacao-conta.png)
-
-- **Bloco Limite de Gastos Extenso:** O bloco informativo `Limite de gastos` é muito extenso pois detalha o limite de gastos por categoria. Um gráfico de setores consegue apresentar a informação de forma mais sucinta e simplificada, como mostrado no exemplo abaixo. A informação mais detalhada, separada por categoria poderia ser mostrada ao clicar no gráfico. Desta forma o usuário pode analisar rapidamente sua relação de gastos em comparação ao limite estabelecido e, se preferir, verificar os dados por categoria.
-
-_Figura 20 – Bloco Limite de Gastos Extenso_
-
-<p align="center">
-  <img src="images/organizze/muita-info.png" alt="LimiteDeGastosExtenso"/>
-</p>
-
-_Figura 21 – Exemplo de Correção_
-
-<p align="center">
-  <img src="images/organizze/exemplo-grafico.png" alt="ExemploGrafico"/>
-</p>
