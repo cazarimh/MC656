@@ -1,0 +1,11 @@
+# Arquivos de pycache
+**/__pycache__
+
+# Ambiente virtual
+venv
+
+# Configurações do VSCode
+.vscode/
+
+# Variáveis de ambiente
+**/.env
