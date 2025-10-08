@@ -80,7 +80,7 @@ _Figura 11 – Zoom no Atalho para Cadastro de Despesas e Receitas_
   <img src="images/organizze/acesso-rapido.png" alt="AcessoRapidoOrganizze"/>
 </p>
 
-- **Personalização de Contas e Cartões:** A plataforma fornece grande possibilidade de personalização de nome e ícone. Para contas, abrange ícone de bancos, corretoras de investimento, fornecedores de ticket alimentação e lojas virtuais para criação de contas. Para cartões encontramos as principais bandeiras e fornecedoras de ticket alimentação também. Esta correspondência com a realidade contribui para a intuitividade de uso e facilidade de reconhecimento da origem dos gastos.
+- **Personalização de Contas e Cartões:** A plataforma fornece grande possibilidade de personalização de nome e ícone. Para contas, abrange ícone de bancos, corretoras de investimento, fornecedores de ticket alimentação e lojas virtuais. Para cartões encontramos as principais bandeiras e fornecedoras de ticket alimentação também. Esta correspondência com a realidade contribui para a intuitividade de uso e facilidade de reconhecimento da origem dos gastos.
 
 _Figura 12 – Ícones Disponíveis para Bancos e Cartões_
 
