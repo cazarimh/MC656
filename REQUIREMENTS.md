@@ -140,3 +140,13 @@ _Figura 18 – Mensagem de Erro_
 _Figura 19 – Seção para Criação de Contas_
 
 ![AbaCriacaoConta](images/organizze/criacao-conta.png)
+
+## **Brainstorming**
+
+Nosso grupo se reuniu em uma ligação e iniciou um brainstorming sobre as principais funcionalidades presentes em nossa plataforma. Compartilhamos ideias e opiniões que classificamos como relevantes para o produto final. Após isso, realizamos uma ilustração de nossa discussão através da ferramenta Miro, como apresentado abaixo:
+
+#### **Ilustração do Brainstorming**
+
+<p align="center">
+  <img src="images/brainstorming/brainstorming.png" alt="BrainstormingIlustracao"/>
+</p>
