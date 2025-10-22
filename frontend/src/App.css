@@ -1,11 +1,23 @@
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  background-color: #f1efefc8;
+  height: 100vh;
+  width: 100%;
+}
+
 .app-root {
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial;
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
   color: #111827;
-  background-color: #fafafa;
+  background-color: transparent;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header */
@@ -19,6 +31,7 @@
   margin: 0;
   color: #000000ff;
   font-size: 1.6rem;
+  margin-bottom: 0.5rem;
 }
 .dashboard-header p {
   margin: 0;
@@ -45,7 +58,7 @@
 .metric-card {
   padding: 1rem;
   border-radius: 8px;
-  background: #fafafa;
+  background: #fafafaff;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
   border: 1px solid #e5e7eb;
 }
@@ -61,16 +74,20 @@
 
 /* variants */
 .card-income {
-  border-color: #bbf7d0;
+  border-color: #4ade80;
+  color: #166534;
 }
 .card-expense {
-  border-color: #fecaca;
+  border-color: #f87171;
+  color: #991b1b;
 }
 .card-credit {
-  border-color: #fde68a;
+  border-color: #facc15;
+  color: #eaa208ff;
 }
 .card-default {
-  border-color: #bfdbfe;
+  border-color: #60a5fa;
+  color: #1e40af;
 }
 
 /* Charts */
@@ -87,9 +104,10 @@
 
 .pie-card {
   background: #fafafa;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d0d2d6ff;
   padding: 1rem;
   border-radius: 8px;
+  color: #616161ff;
 }
 .pie-card h3 {
   margin: 0 0 0.75rem 0;
@@ -160,4 +178,17 @@
 .legend-value {
   color: #6b7280;
   font-weight: 600;
+}
+
+.app-layout {
+  display: flex;
+}
+
+.main-content {
+  margin-left: 250px;
+  padding: 2rem;
+  flex: 1;
+  background-color: #f1efefc8;
+  height: 100vh;
+  overflow-y: auto;
 }

@@ -30,7 +30,7 @@ export default function PieChartCard({ title, data, total }) {
             style={{ background: `conic-gradient(${stops})` }}
           />
           <div className="pie-center">
-            <div>R$</div>
+            <div>Total</div>
             <div className="pie-total">
               {Math.round(total).toLocaleString("pt-BR")}
             </div>
