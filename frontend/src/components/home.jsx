@@ -30,7 +30,7 @@ export default function Home() {
     <div className="dashboard">
       <header className="dashboard-header">
         <div>
-          <h1>Página Princial</h1>
+          <h1>Página Principal</h1>
           <p>Acompanhe suas receitas e despesas</p>
         </div>
         <div className="month">

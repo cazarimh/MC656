@@ -1,0 +1,108 @@
+.add-income-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.add-income-header {
+  margin-bottom: 1.5rem;
+}
+
+.add-income-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #111827;
+}
+
+.add-income-header p {
+  color: #6b7280;
+  margin: 0.5rem 0 0 0;
+}
+
+/* Estilos do formulário */
+.income-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.income-form h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #111827;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.income-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #111827;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.income-title .title-icon {
+  color: #22c55e; /* verde */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+}
+
+.form-group label span {
+  color: #dc2626;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #22c55e; /* verde */
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+.submit-button {
+  width: 100%;
+  background-color: #22c55e;
+  color: #ffffff;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease-in-out;
+}
+
+.submit-button:hover {
+  background-color: #16a34a;
+}
+
+.submit-button svg {
+  margin-right: 8px;
+}
