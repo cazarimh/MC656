@@ -17,7 +17,7 @@ export default function LoginPage() {
     // Por enquanto são dados fictícios apenas para teste
     if (form.email === "teste@teste.com" && form.password === "123456") {
       alert("Login bem-sucedido!");
-      navigate("/home"); // vai para a home
+      navigate("/home");
     } else {
       alert("Credenciais inválidas!");
     }

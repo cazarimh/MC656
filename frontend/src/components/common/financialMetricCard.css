@@ -1,0 +1,75 @@
+.financial-card {
+  background-color: white;
+  border-radius: 10px;
+  padding: 0.2rem 1.5rem 1rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.financial-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+/* Bordas coloridas */
+.financial-card.card-default {
+  border: 2px solid #93c5fd;
+}
+
+.financial-card.card-income {
+  border: 2px solid #86efac;
+}
+
+.financial-card.card-expense {
+  border: 2px solid #fca5a5;
+}
+
+/* Cabeçalho e ícone */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+  margin-top: -0.2rem;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.icon-button:hover {
+  transform: scale(1.1);
+}
+
+.icon-button.income svg {
+  color: #22c55e;
+}
+
+.icon-button.expense svg {
+  color: #ef4444;
+}
+
+/* Valores */
+.amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Cores específicas para os valores de cada card */
+.card-default .amount {
+  color: #2a65c3ff;
+}
+
+.card-income .amount {
+  color: #12803acc;
+}
+
+.card-expense .amount {
+  color: #b72b2bff;
+}

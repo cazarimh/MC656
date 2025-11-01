@@ -182,6 +182,12 @@ body,
 
 .app-layout {
   display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex-shrink: 0;
 }
 
 .main-content {

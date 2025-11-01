@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import FinancialMetricCard from "./financialMetricCard";
 import PieChartCard from "./pieChartCard";
-import "./Home.css";
+import "./home.css";
 
 export default function Home() {
   const [currentMonth] = useState(new Date());
@@ -12,12 +12,10 @@ export default function Home() {
   const handleLogout = () => {
     navigate("/");
   };
-
   const financialData = {
     currentBalance: 12450.75,
     totalIncome: 8500.0,
     totalExpenses: 5234.25,
-    creditCardBalance: 1850.5,
   };
 
   const incomeData = [
@@ -66,11 +64,13 @@ export default function Home() {
           title="Total Receitas"
           amount={financialData.totalIncome}
           variant="income"
+          onAddClick={() => navigate("/home/add-income")}
         />
         <FinancialMetricCard
           title="Total Despesas"
           amount={financialData.totalExpenses}
           variant="expense"
+          onAddClick={() => navigate("/home/add-expense")}
         />
       </section>
 

@@ -22,26 +22,6 @@ export default function Sidebar() {
           <LayoutDashboard size={20} className="icon" />
           <span>Dashboard</span>
         </NavLink>
-
-        <NavLink
-          to="/home/add-income"
-          className={({ isActive }) =>
-            isActive ? "nav-item active" : "nav-item"
-          }
-        >
-          <TrendingUp size={20} className="icon" />
-          <span>Adicionar Receita</span>
-        </NavLink>
-
-        <NavLink
-          to="/home/add-expense"
-          className={({ isActive }) =>
-            isActive ? "nav-item active" : "nav-item"
-          }
-        >
-          <TrendingDown size={20} className="icon" />
-          <span>Adicionar Despesa</span>
-        </NavLink>
       </nav>
     </aside>
   );
