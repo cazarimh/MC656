@@ -1,40 +1,42 @@
 .add-expense-container {
-  max-width: 700px;
+  max-width: 600px;
   margin: 0 auto;
+  background: #fafafa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   padding: 2rem;
-  font-family: Inter, sans-serif;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .add-expense-header {
-  text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .add-expense-header h1 {
-  font-size: 1.8rem;
+  margin: 0;
+  font-size: 1.5rem;
   color: #111827;
-  margin-bottom: 0.25rem;
 }
 
 .add-expense-header p {
   color: #6b7280;
-  font-size: 1rem;
+  margin: 0.5rem 0 0 0;
 }
 
+/* Formulário */
 .expense-form {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
 }
 
 .expense-form h2 {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
   color: #111827;
   font-size: 1.2rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .expense-title {
@@ -53,7 +55,6 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
 }
 
 .form-group label {
@@ -66,38 +67,43 @@
   color: #dc2626;
 }
 
-input,
-select {
+.form-group input,
+.form-group select {
   padding: 0.7rem;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
-  transition: border-color 0.2s;
+  border-color: #dc2626; /* vermelho */
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
 }
 
-input:focus,
-select:focus {
-  border-color: #dc2626;
-}
-
+/* Botão */
 .submit-button-expense {
+  width: 100%;
+  background-color: #dc2626;
+  color: #ffffff;
+  padding: 0.9rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #dc2626;
-  color: white;
-  font-weight: 600;
-  border: none;
-  border-radius: 6px;
-  padding: 0.8rem 1.2rem;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 1rem;
-  width: 100%;
-  transition: background 0.2s;
+  transition: background 0.2s ease-in-out;
 }
 
 .submit-button-expense:hover {
-  background: #b91c1c;
+  background-color: #b91c1c;
+}
+
+.submit-button-expense svg {
+  margin-right: 8px;
 }

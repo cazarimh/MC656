@@ -1,11 +1,18 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LogOut } from "lucide-react";
 import FinancialMetricCard from "./financialMetricCard";
 import PieChartCard from "./pieChartCard";
+import "./Home.css";
 
 export default function Home() {
   const [currentMonth] = useState(new Date());
+  const navigate = useNavigate();
 
-  // Dados mock (depois vamos puxar esses dados do backend pela API)
+  const handleLogout = () => {
+    navigate("/");
+  };
+
   const financialData = {
     currentBalance: 12450.75,
     totalIncome: 8500.0,
@@ -29,17 +36,24 @@ export default function Home() {
   return (
     <div className="dashboard">
       <header className="dashboard-header">
-        <div>
+        <div className="header-left">
           <h1>Página Principal</h1>
-          <p>Acompanhe suas receitas e despesas</p>
+          <p className="subtitle">Acompanhe suas receitas e despesas</p>
+
+          {/* mês separado em sua própria linha */}
+          <p className="month">
+            Mês:{" "}
+            {currentMonth.toLocaleString("pt-BR", {
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
         </div>
-        <div className="month">
-          Mês:{" "}
-          {currentMonth.toLocaleString("pt-BR", {
-            month: "long",
-            year: "numeric",
-          })}
-        </div>
+
+        <button className="logout-button" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>Sair</span>
+        </button>
       </header>
 
       <section className="metrics-grid">
@@ -57,11 +71,6 @@ export default function Home() {
           title="Total Despesas"
           amount={financialData.totalExpenses}
           variant="expense"
-        />
-        <FinancialMetricCard
-          title="Cartão"
-          amount={financialData.creditCardBalance}
-          variant="credit"
         />
       </section>
 

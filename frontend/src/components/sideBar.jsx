@@ -1,12 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
-import {
-  LayoutDashboard,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-} from "lucide-react";
+import { LayoutDashboard, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function Sidebar() {
   return (
@@ -17,17 +12,33 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        <NavLink to="/" className="nav-item">
+        <NavLink
+          to="/home"
+          end
+          className={({ isActive }) =>
+            isActive ? "nav-item active" : "nav-item"
+          }
+        >
           <LayoutDashboard size={20} className="icon" />
           <span>Dashboard</span>
         </NavLink>
 
-        <NavLink to="/add-income" className="nav-item">
+        <NavLink
+          to="/home/add-income"
+          className={({ isActive }) =>
+            isActive ? "nav-item active" : "nav-item"
+          }
+        >
           <TrendingUp size={20} className="icon" />
           <span>Adicionar Receita</span>
         </NavLink>
 
-        <NavLink to="/add-expense" className="nav-item">
+        <NavLink
+          to="/home/add-expense"
+          className={({ isActive }) =>
+            isActive ? "nav-item active" : "nav-item"
+          }
+        >
           <TrendingDown size={20} className="icon" />
           <span>Adicionar Despesa</span>
         </NavLink>
