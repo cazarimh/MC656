@@ -1,9 +1,27 @@
+// src/components/common/Sidebar.jsx
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { LayoutDashboard, FileText, Target, BarChart3 } from "lucide-react";
 import "./Sidebar.css";
-import { LayoutDashboard, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function Sidebar() {
+  const location = useLocation();
+
+  const menuItems = [
+    { label: "Dashboard", path: "/home", icon: <LayoutDashboard size={18} /> },
+    {
+      label: "Lançamentos",
+      path: "/home/lancamentos",
+      icon: <FileText size={18} />,
+    },
+    { label: "Metas", path: "/home/metas", icon: <Target size={18} /> },
+    {
+      label: "Relatórios",
+      path: "/home/relatorios",
+      icon: <BarChart3 size={18} />,
+    },
+  ];
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -12,16 +30,18 @@ export default function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        <NavLink
-          to="/home"
-          end
-          className={({ isActive }) =>
-            isActive ? "nav-item active" : "nav-item"
-          }
-        >
-          <LayoutDashboard size={20} className="icon" />
-          <span>Dashboard</span>
-        </NavLink>
+        {menuItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`sidebar-link ${
+              location.pathname === item.path ? "active" : ""
+            }`}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </Link>
+        ))}
       </nav>
     </aside>
   );

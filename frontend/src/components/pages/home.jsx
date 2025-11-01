@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
-import FinancialMetricCard from "./financialMetricCard";
-import PieChartCard from "./pieChartCard";
-import "./home.css";
+import FinancialMetricCard from "../common/financialMetricCard";
+import PieChartCard from "../charts/pieChartCard";
+import "../pages/home.css";
 
 export default function Home() {
   const [currentMonth] = useState(new Date());
