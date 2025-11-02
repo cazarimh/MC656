@@ -89,7 +89,6 @@ export default function Lancamentos() {
   const handleEditChange = (e) => {
     const { name, value } = e.target;
 
-    // trata o campo numérico corretamente
     if (name === "valor") {
       setEditData((prev) => ({
         ...prev,
@@ -101,9 +100,7 @@ export default function Lancamentos() {
   };
 
   const handleSave = () => {
-    // garante que a data não perca o dia por causa do fuso
     const adjustedDate = editData.data;
-
     setTransactions(
       transactions.map((t) =>
         t.id === editing ? { ...editData, data: adjustedDate, id: editing } : t
@@ -118,18 +115,24 @@ export default function Lancamentos() {
     setEditData({});
   };
 
-  const incomeTypes = [
-    ...new Set(
-      transactions.filter((t) => t.tipo === "receita").map((t) => t.subtipo)
-    ),
-  ];
-  const expenseTypes = [
-    ...new Set(
-      transactions.filter((t) => t.tipo === "despesa").map((t) => t.subtipo)
-    ),
-  ];
+  // Tipos fixos
+  const tiposFixos = {
+    receita: ["Salário", "Freelance", "Investimentos", "Outros"],
+    despesa: [
+      "Moradia",
+      "Alimentação",
+      "Transporte",
+      "Entretenimento",
+      "Utilidades",
+      "Saúde",
+      "Educação",
+      "Outros",
+    ],
+  };
 
-  // Função para exibir a data corretamente (sem perder um dia)
+  const incomeTypes = tiposFixos.receita;
+  const expenseTypes = tiposFixos.despesa;
+
   const formatDateDisplay = (dateStr) => {
     const [year, month, day] = dateStr.split("-");
     return `${day}/${month}/${year}`;
@@ -207,11 +210,21 @@ export default function Lancamentos() {
                   </select>
 
                   <label>Subtipo</label>
-                  <input
+                  <select
                     name="subtipo"
                     value={editData.subtipo}
                     onChange={handleEditChange}
-                  />
+                  >
+                    <option value="">Selecione...</option>
+                    {(editData.tipo === "receita"
+                      ? tiposFixos.receita
+                      : tiposFixos.despesa
+                    ).map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
 
                   <label>Valor</label>
                   <input
