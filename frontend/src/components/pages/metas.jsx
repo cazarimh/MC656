@@ -87,7 +87,7 @@ export default function Metas() {
         tipo: form.tipo,
         subtipo: form.subtipo,
         valorMeta: Number(form.valorMeta),
-        valorAtual: 0, // Por enquanto 0, será puxado do sistema futuramente
+        valorAtual: 0, // Por enquanto 0, será puxado das API futuramente
       };
       setGoals([...goals, newGoal]);
     }
