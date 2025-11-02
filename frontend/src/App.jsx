@@ -16,13 +16,13 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Página inicial é o login */}
+        {/* Páginas públicas */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Layout principal após login */}
+        {/* Layout principal (com Sidebar) */}
         <Route
-          path="/home*"
+          path="/home/*"
           element={
             <div className="app-layout">
               <Sidebar />
@@ -31,17 +31,14 @@ export default function App() {
                   <Route index element={<Home />} />
                   <Route path="add-income" element={<AddIncome />} />
                   <Route path="add-expense" element={<AddExpense />} />
+                  <Route path="lancamentos" element={<Lancamentos />} />
+                  <Route path="metas" element={<Metas />} />
+                  <Route path="relatorios" element={<Relatorios />} />
                 </Routes>
               </main>
             </div>
           }
         />
-
-        <Route path="add-income" element={<AddIncome />} />
-        <Route path="add-expense" element={<AddExpense />} />
-        <Route path="lancamentos" element={<Lancamentos />} />
-        <Route path="metas" element={<Metas />} />
-        <Route path="relatorios" element={<Relatorios />} />
       </Routes>
     </Router>
   );
