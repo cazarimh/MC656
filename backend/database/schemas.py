@@ -1,47 +1,36 @@
 from pydantic import BaseModel
 from datetime import date
 
-class UserCreate(BaseModel):
-    name: str
-    email: str
-    password: str
-
-class User(BaseModel):
-    general_id = 0
-
-    id: int
-    name: str
-    email: str
-    hashed_password: str
-
-    def __init__(self):
-        User.general_id += 1
-        self.id = User.general_id
-
-    class Config:
-        orm_mode = True
-
 class TransactionCreate(BaseModel):
     date: str
     value: float
     type: str
     category: str
-    description: str
+    description: str | None = None
 
-class Transaction(BaseModel):
-    general_id = 0
-
+class TransactionResponse(BaseModel):
     user_id: int
-    id: int
-    date: date
-    value: float
-    type: str
-    category: str
-    description: str
+    transaction_id: int
+    transaction_date: date
+    transaction_value: float
+    transaction_type: str
+    transaction_category: str
+    transaction_description: str | None = None
 
-    def __init__(self):
-        Transaction.general_id += 1
-        self.id = Transaction.general_id
+    class Config:
+        orm_mode = True
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+
+class UserResponse(BaseModel):
+    user_id: int
+    user_name: str
+    user_email: str
+    user_hashed_password: str
+    user_transactions: list[TransactionResponse] = []
 
     class Config:
         orm_mode = True
