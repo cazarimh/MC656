@@ -8,9 +8,9 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     user_email = Column(String, unique=True, index=True)
     user_name = Column(String, index=True)
-    user_password = Column(String, index=True)
+    user_hashed_password = Column(String, index=True)
 
-    user_transactions = relationship('Transaction', back_populates='user')
+    user_transactions = relationship('Transaction', back_populates='user', cascade='all, delete-orphan')
 
 class Transaction(Base):
     __tablename__ = 'transactions'
