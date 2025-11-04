@@ -31,9 +31,16 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
     Levanta:
     HTTPException:
+        - 400 BAD REQUEST se o campo nomes estiver vazio
         - 400 BAD REQUEST se o email já estiver cadastrado
         - 400 BAD REQUEST se o formato do email não for válido ou a senha não atender os critérios de segurança
     """
+
+    if (user_data.name == ""):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Insira um nome válido.",
+        )
 
     # Valida o formato do email
     validate_email_format(user_data.email)
