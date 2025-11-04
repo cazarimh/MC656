@@ -8,6 +8,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     user_email = Column(String, unique=True, index=True)
     user_name = Column(String, index=True)
+    user_password = Column(String, index=True)
 
     user_transactions = relationship('Transaction', back_populates='user')
 
@@ -18,8 +19,8 @@ class Transaction(Base):
     transaction_id = Column(Integer, primary_key=True, index=True)
     transaction_date = Column(Date, index=True)
     transaction_value = Column(Float, index=True)
-    transaction_category = Column(String, index=True)
     transaction_type = Column(String, index=True)
+    transaction_category = Column(String, index=True)
     transaction_description = Column(String, nullable=True, index=True)
 
     user = relationship('User', back_populates='user_transactions')

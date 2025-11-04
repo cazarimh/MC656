@@ -1,25 +1,21 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Depends, status
+from sqlalchemy.orm import Session
 
-from .models.expense import Expense
-from .models.expenseCreate import ExpenseCreate
-from .models.user import User
-from .models.userCreate import UserCreate
+from .database.config import get_db
+from .database.schemas import UserCreate, User, TransactionCreate, Transaction
+from .database.users import create_user_db, get_user_by_email
 from .utils.password_hash import get_password_hash
 from .utils.validators import (
     validate_date_ISO_format,
     validate_email_format,
-    validate_password_strength,
+    validate_password_strength
 )
 
 app = FastAPI()
 
-# "Banco de Dados" em memória (apenas para testes)
-users_db = {}
-user_id = 0
 
-
-@app.post("/users", response_model=User, status_code=status.HTTP_201_CREATED)
-def create_user(user_data: UserCreate):
+@app.post("/create-user", response_model=User, status_code=status.HTTP_201_CREATED)
+def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     Criação de um novo usuário no sistema
 
@@ -27,48 +23,31 @@ def create_user(user_data: UserCreate):
     user_data (UserCreate): objeto contendo os dados do usuário, incluindo email e senha
 
     Retorna:
-    User: objeto contendo o ID e o email do usuário cadastrado
+    User: objeto contendo o ID, nome, email e senha encriptada do usuário cadastrado
 
     Levanta:
     HTTPException:
         - 400 BAD REQUEST se o email já estiver cadastrado
         - 400 BAD REQUEST se o formato do email não for válido ou a senha não atender os critérios de segurança
     """
-    global user_id
 
     # Valida o formato do email
     validate_email_format(user_data.email)
 
+    # Verifica se o email já existe no banco
+    if (get_user_by_email(db, user_data.email)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Este email já está cadastrado.",
+        )
+
     # Valida se a senha preenche os critérios
     validate_password_strength(user_data.password)
 
-    # Verifica se o email já existe no "banco"
-    for user in users_db.values():
-        if user["email"] == user_data.email:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Este email já está cadastrado.",
-            )
-
     # Gera o hash da senha para não armazenar a senha original
-    hashed_password = get_password_hash(user_data.password)
-    new_user = {
-        "id": user_id,
-        "email": user_data.email,
-        "hashed_password": hashed_password,
-    }
-    user_id += 1
+    user_data.password = get_password_hash(user_data.password)
 
-    # Armazena o novo usuário no dicionário
-    users_db[new_user["id"]] = new_user
-
-    # Retorna os dados do usuário, seguindo o modelo User definido em models
-    return new_user
-
-
-# "Banco de Dados" de um usuário X em memória (apenas para testes)
-expenses_db = {}
-expenses_id = 0
+    return create_user_db(db, user_data)
 
 
 @app.post("/expenses", response_model=Expense, status_code=status.HTTP_201_CREATED)
