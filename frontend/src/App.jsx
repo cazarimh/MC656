@@ -1,35 +1,45 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// src/App.jsx
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./components/pages/home";
+import AddIncome from "./components/forms/addIncome";
+import AddExpense from "./components/forms/addExpense";
+import Sidebar from "./components/common/sideBar";
+import Login from "./components/pages/loginPage";
+import Register from "./components/pages/registerPage";
+import Lancamentos from "./components/pages/lancamentos";
+import Metas from "./components/pages/metas";
+import Relatorios from "./components/pages/relatorios";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <Router>
+      <Routes>
+        {/* Páginas públicas */}
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-export default App
+        {/* Layout principal (com Sidebar) */}
+        <Route
+          path="/home/*"
+          element={
+            <div className="app-layout">
+              <Sidebar />
+              <main className="main-content">
+                <Routes>
+                  <Route index element={<Home />} />
+                  <Route path="add-income" element={<AddIncome />} />
+                  <Route path="add-expense" element={<AddExpense />} />
+                  <Route path="lancamentos" element={<Lancamentos />} />
+                  <Route path="metas" element={<Metas />} />
+                  <Route path="relatorios" element={<Relatorios />} />
+                </Routes>
+              </main>
+            </div>
+          }
+        />
+      </Routes>
+    </Router>
+  );
+}
