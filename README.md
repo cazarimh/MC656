@@ -22,3 +22,89 @@ O projeto consiste no desenvolvimento de um sistema digital voltado para auxilia
 1. Navegue até a pasta do frontend: `cd frontend`
 2. Instale as dependências: `npm install`
 3. Rode o servidor de desenvolvimento: `npm run dev`
+
+## Avaliação A4
+
+### Parte 1: Arquitetura
+
+Para a avaliação A4, o estilo arquitetural adotado para o projeto é a arquitetura em camadas (Layered Architecture).
+
+A aplicação é composta por três camadas principais:
+
+- Model: Gerencia a lógica de negócios e a persistência dos dados. Essa camada inclui as entidades referentes a usuários, lançamentos financeiros, metas e categorias de receitas e despesas, armazenadas no banco de dados SQLite.
+
+- Frontend: Responsável pela interação com o usuário, exibindo informações financeiras, gráficos e formulários por meio da aplicação React.
+
+- Backend: Intermedia a comunicação entre o frontend e o banco de dados, processando as requisições HTTP, aplicando regras de negócio e retornando respostas em formato JSON.
+
+### Características do Estilo Arquitetural em Camadas no nosso sistema
+
+1. Divisão de Responsabilidades:
+
+   - Frontend (React): Responsável pela interface e interação com o usuário, exibindo gráficos de desempenho, metas e lançamentos.
+   - Backend (FastAPI): Processa as requisições, aplica as regras de negócio (como cálculos de metas e autenticação de usuários) e se comunica com o banco.
+   - Model (SQLite): Armazena e recupera os dados relacionados a usuários, receitas, despesas e metas.
+
+2. Encapsulamento:
+
+   - O frontend não conhece a lógica de persistência de dados; apenas consome as APIs.
+   - O backend não precisa conhecer detalhes da renderização ou da interface gráfica, apenas fornece os dados solicitados.
+
+3. Modularidade e Reuso:
+
+   - O módulo de autenticação de usuários pode ser reutilizado em outros sistemas FastAPI.
+   - Os componentes gráficos do frontend podem ser integrados em diferentes dashboards ou aplicações analíticas.
+
+### Principais Componentes e Suas Responsabilidades
+
+Frontend (React):
+
+- Página de Login: Permite que o usuário acesse o sistema com suas credenciais, verificadas pelo backend.
+
+- Página de Registro: Caso seja um usuário sem credenciais cadastradas, consegue se cadastrar para realizar o acesso ao sistema.
+
+- Página de Dashboards: Página inicial do sistema que permite o usuário ver as principais informações (saldo, total de receitas e despesas) para controle financeiro. Além disso, permite registrar novas receitas ou despesas de maneira rápida.
+
+- Página de Lançamentos: Exibe todas as receitas e despesas do usuário, com a possibilidade de aplicação de filtros por data e categoria.
+
+- Página de Metas: Permite cadastrar metas financeiras mensais e por categoria, e exibe o progresso em gráficos de pizza e barras.
+
+- Página de Relatórios: Mostra gráficos de linha comparando receitas e despesas ao longo do tempo, oferecendo visão analítica da evolução financeira.
+
+- Componentes Gráficos: Utilizam a biblioteca Recharts para representar visualmente os dados de forma intuitiva.
+
+Backend (FastAPI):
+
+- Rotas:
+
+  - auth_controller.py: Gerencia o login e a autenticação dos usuários.
+  - lancamentos_controller.py: Recebe e processa dados de lançamentos (criação, leitura, atualização e exclusão).
+  - metas_controller.py: Controla o CRUD das metas financeiras e a verificação de progresso.
+  - relatorios_controller.py: Gera dados analíticos para os gráficos do frontend.
+
+- Services:
+
+  - auth_service.py: Implementa a lógica de autenticação e geração de tokens JWT.
+  - finance_service.py: Realiza os cálculos financeiros e agrega dados de receitas/despesas.
+  - meta_service.py: Calcula o progresso das metas e identifica se foram atingidas ou ultrapassadas.
+
+- Models:
+  - User: Representa o usuário autenticado, com login, senha e permissões.
+  - Lancamento: Representa transações financeiras (valor, tipo, data e categoria).
+  - Meta: Representa metas mensais de receita e despesa.
+
+Além disso, temos também o Banco de Dados (SQLite) que persiste as informações dos usuários como login, lançamentos financeiros e as metas definidas por ele.
+
+### Padrão de Projeto
+
+O padrão de projeto adotado foi o Observer. Esse padrão foi escolhido porque o backend precisa notificar automaticamente o frontend sobre mudanças nos dados, por exemplo, quando uma nova despesa ou receita é adicionada, todas as abas do sistema (Dashboards, Lançamentos, Metas e Relatórios) devem ser atualizados em tempo real.
+
+No nosso sistema o fluxo de funcionamento ocorre da seguinte maneira:
+
+- O backend (sujeito) monitora alterações nas tabelas de lançamentos, metas e registro de novos lançamentos pela aba Dashboards
+- O frontend (observador) é notificado e atualiza automaticamente os gráficos e painéis.
+
+### Diagramas C4
+
+Abaixo está o diagrama C4:
+![DiagramsC4](images/diagramas-c4/diagramasC4.png)
