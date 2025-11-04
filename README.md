@@ -107,4 +107,4 @@ No nosso sistema o fluxo de funcionamento ocorre da seguinte maneira:
 ### Diagramas C4
 
 Abaixo está o diagrama C4:
-![DiagramsC4](images/diagramas-c4/diagramasC4.png)
+![DiagramsC4](images/diagramas-c4/diagramasC4.drawio.png)
