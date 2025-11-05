@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.database.config import get_db
-from backend.database.schemas import UserCreate, UserResponse
+from backend.database.schemas import UserCreate
 from backend.services import user_service
-from backend.adapter.user_adapter import  UserLogin, UserLoginResponse 
+from backend.dto.user_dto import  UserLogin, UserLoginResponse , UserResponse, UserRegisterResponse
 
 router = APIRouter(
     prefix="/users",
@@ -13,7 +13,7 @@ router = APIRouter(
 
 @router.post(
     "/", 
-    response_model=UserResponse, 
+    response_model=UserRegisterResponse, 
     status_code=status.HTTP_201_CREATED
 )
 def create_user(
@@ -23,11 +23,8 @@ def create_user(
     
     # Controller recebe a requisição HTTP (user_data)
     try:
-        new_user = user_service.create_new_user(user_data=user_data, db=db)
-        return new_user
-    
-    # Se o serviço levantar uma exceção (como email duplicado),
-    # o controller a captura e a retorna como um erro HTTP.
+        # O serviço agora já retorna o DTO pronto
+        return user_service.create_new_user(user_data=user_data, db=db)
     except HTTPException as e:
         raise e
     except Exception as e:
@@ -35,7 +32,6 @@ def create_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred: {str(e)}"
         )
-    
     
 @router.post(
     "/login",

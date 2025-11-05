@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy.orm import Session
 
-# from backend.controller import user_controller
+from backend.controller import user_controller
 from .adapter.transactions_adapter import TransactionAdapter
 from .adapter.user_adapter import UserAdapter
 from .database import models
@@ -166,4 +166,4 @@ def get_transactions(user_id: int, db: Session = Depends(get_db)):
         )
 
 
-# app.include_router(user_controller.router)
+app.include_router(user_controller.router)
