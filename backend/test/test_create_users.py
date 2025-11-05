@@ -1,202 +1,204 @@
-import pytest
-from fastapi.testclient import TestClient
-from backend.main import app, users_db, user_id as main_user_id
-
-client = TestClient(app)
-
-@pytest.fixture(autouse=True)
-def reset_dict_before_test():
-    '''
-    Limpa o dicionário ("banco de dados" em memória) antes de realizar os testes
-    '''
-    global main_user_id
-    users_db.clear()
-    main_user_id = 0
-
-def test_create_user_sucess():
+def test_create_user_sucess(test_client):
     '''
     Testa se um usuário é criado com sucesso e o status code retornado é 201
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailsucess@gmail.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailsucess@gmail.com", "password": "Senha@Forte123"}
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["email"] == "emailsucess@gmail.com"
-    assert "id" in data
-    assert "password" not in data
+    assert data["user_name"] == "Fulano Testador"
+    assert data["user_email"] == "emailsucess@gmail.com"
+    assert data["user_transactions"] == []
+    assert "user_id" in data
+    assert "user_hashed_password" in data
+
+################### TESTES DE NOME ###################
+
+def test_empty_name(test_client):
+    '''
+    Testa se o sistema retorna um erro na criação de um usuário sem nome
+    '''
+    response = test_client.post(
+        "/users",
+        json={"name": "", "email": "emailteste@gmail.com", "password": "Senha@Forte123"}
+    )
+
+    # Verifica se a API retorna o erro corretamente
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Insira um nome válido."}
 
 ################### TESTES DE EMAIL ###################
 
-def test_duplicate_email():
+def test_duplicate_email(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário com email já cadastrado
     '''
-    client.post(
+    test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "Senha@Forte123"}
     )
 
     # Tenta criar um segundo usuário com o mesmo email
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com", "password": "OutraSenha123@"}
+        json={"name": "Ciclano Testador", "email": "emailteste@gmail.com", "password": "OutraSenha123@"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "Este email já está cadastrado."}
 
-def test_local_part_empty():
+def test_local_part_empty(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com a parte local vazia
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "@gmail.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "@gmail.com", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_local_part_contains_special_character():
+def test_local_part_contains_special_character(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com a parte local contendo caracteres especiais proibidos
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste*$@gmail.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste*$@gmail.com", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_local_part_contains_space():
+def test_local_part_contains_space(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com a parte local contendo espaço
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "email teste@gmail.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "email teste@gmail.com", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_domain_contains_space():
+def test_domain_contains_space(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio contendo espaço
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gm ail.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gm ail.com", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_domain_contains_underscore():
+def test_domain_contains_underscore(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio contendo underscore
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail_.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail_.com", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_domain_empty():
+def test_domain_empty(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio vazio
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@.com", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_domain_contains_special_character():
+def test_domain_contains_special_character(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio contendo caracteres especiais proibidos
     (hífen e ponto são os únicos permitidos)
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail_.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail_.com", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_tld_contains_space():
+def test_tld_contains_space(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio de nível superior contendo espaço
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.co m", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.co m", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_tld_contains_digits():
+def test_tld_contains_digits(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio de nível superior contendo dígitos
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com2", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com2", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_tld_contains_special_characters():
+def test_tld_contains_special_characters(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio de nível superior contendo caracteres especiais
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com-!", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com-!", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-def test_tld_length():
+def test_tld_length(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um usuário
     com o domínio de nível superior contendo menos de 2 caracteres
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.c", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.c", "password": "Senha@Forte123"}
     )
 
     # Verifica se a API retorna o erro corretamente
@@ -205,70 +207,70 @@ def test_tld_length():
 
 ################### TESTES DE PASSWORD ###################
 
-def test_password_length():
+def test_password_length(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um
     usuário com a senha possuindo menos de 8 caracteres
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com", "password": "Ab1!L()"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "Ab1!L()"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A senha deve conter ao menos 8 caracteres."}
 
-def test_password_uppercase():
+def test_password_uppercase(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um
     usuário com a senha sem uma letra maiúscula
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com", "password": "test123!@"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "test123!@"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A senha deve conter ao menos uma letra maiúscula."}
 
-def test_password_lowercase():
+def test_password_lowercase(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um
     usuário com a senha sem uma letra minúscula
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com", "password": "TEST123!@"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "TEST123!@"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A senha deve conter ao menos uma letra minúscula."}
 
-def test_password_digit():
+def test_password_digit(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um
     usuário com a senha sem um dígito
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com", "password": "TEST!@test"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "TEST!@test"}
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A senha deve conter ao menos um dígito."}
 
-def test_password_special_character():
+def test_password_special_character(test_client):
     '''
     Testa se o sistema retorna um erro na criação de um
     usuário com a senha sem um caractere especial
     '''
-    response = client.post(
+    response = test_client.post(
         "/users",
-        json={"email": "emailteste@gmail.com", "password": "TEST123test"}
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "TEST123test"}
     )
 
     # Verifica se a API retorna o erro corretamente
