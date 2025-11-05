@@ -20,6 +20,9 @@ def validate_password_strength(password: str):
     Levanta:
     HTTPException: se a senha não atender algum critério
     '''
+
+    # FIXME: possível Bloater - Long Method
+
     if len(password) < 8:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

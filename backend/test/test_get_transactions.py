@@ -75,6 +75,9 @@ def test_with_transactions(test_client, mock_user_and_transactions):
     '''
     Testa se o sistema retorna uma lista com apenas as transações de um usuário cadastrado
     '''
+
+    # FIXME: possível Dispensable - Comments
+
     # Cria o usuário A
     user_A = test_client.post("/users", json={"name": "Maria", "email": "emailtestA@teste.com", "password": "SenhaForte@123"}).json()
 

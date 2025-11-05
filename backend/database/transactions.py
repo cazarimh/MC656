@@ -23,7 +23,7 @@ def get_transaction_by_user(db: Session, user_id: int):
 
 # TODO: funções de listar transações mas com filtros aplicados
 
-def update_transaction(db: Session, transaction_id: int, new_date: str, new_value: float, new_category: str, new_description: str):
+def update_transaction(db: Session, transaction_id: int, new_date: str, new_value: float, new_category: str, new_description: str): # FIXME: possível Bloater - Long Parameter List
     transaction = get_transaction_by_id(db, transaction_id)
     if (transaction):
         transaction.transaction_date = dt.fromisoformat(new_date)

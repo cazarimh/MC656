@@ -31,22 +31,23 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
     Levanta:
     HTTPException:
-        - 400 BAD REQUEST se o campo nomes estiver vazio
+        - 400 BAD REQUEST se o campo nome estiver vazio
         - 400 BAD REQUEST se o email já estiver cadastrado
         - 400 BAD REQUEST se o formato do email não for válido ou a senha não atender os critérios de segurança
     """
 
-    if (user_data.name == ""):
+    if (not user_data.name):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Insira um nome válido.",
+            detail="Insira um nome.",
         )
 
     # Valida o formato do email
     validate_email_format(user_data.email)
 
     # Verifica se o email já existe no banco
-    if (get_user_by_email(db, user_data.email)):
+    user = get_user_by_email(db, user_data.email)
+    if (user):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Este email já está cadastrado.",
@@ -56,7 +57,7 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     validate_password_strength(user_data.password)
 
     # Gera o hash da senha para não armazenar a senha original
-    user_data.password = get_password_hash(user_data.password)
+    user_data.password = get_password_hash(user_data.password) # FIXME: possível Dispensable - Comments
 
     return create_user_db(db, user_data)
 
@@ -89,6 +90,8 @@ def create_transaction(user_id: int, transaction: TransactionCreate, db: Session
 
     user = get_user_by_id(db, user_id)
     if (user):
+
+        # FIXME: possível Bloater - Long Method
 
         valid_types = ["Receita", "Despesa"]
         if transaction.type not in valid_types:
