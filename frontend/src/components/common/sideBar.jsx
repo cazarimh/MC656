@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, FileText, Target, BarChart3 } from "lucide-react";
-import "./Sidebar.css";
+import "./sideBar.css";
 
 export default function Sidebar() {
   const location = useLocation();
