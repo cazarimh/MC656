@@ -8,11 +8,8 @@ def test_create_user_sucess(test_client):
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["user_name"] == "Fulano Testador"
-    assert data["user_email"] == "emailsucess@gmail.com"
-    assert data["user_transactions"] == []
-    assert "user_id" in data
-    assert "user_hashed_password" in data
+    assert data["user"]["email"] == "emailsucess@gmail.com"
+    assert "id" in data["user"]
 
 ################### TESTES DE NOME ###################
 
