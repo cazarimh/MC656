@@ -97,12 +97,14 @@ Além disso, temos também o Banco de Dados (SQLite) que persiste as informaçõ
 
 ### Padrão de Projeto
 
-O padrão de projeto adotado foi o Observer. Esse padrão foi escolhido porque o backend precisa notificar automaticamente o frontend sobre mudanças nos dados, por exemplo, quando uma nova despesa ou receita é adicionada, todas as abas do sistema (Dashboards, Lançamentos, Metas e Relatórios) devem ser atualizados em tempo real.
+Optamos por utilizar o padrão de projeto Adapter para o nosso sistema, pois o backend não pode retornar os dados para o frontend da maneira que eles sãoa armazenados no banco de dados, oque causaria brechas de segurnaça. Por exemplo, ao fazer uma requisição para buscar os dados de um usuário, a resposta da API contém apenas os dados nescessários para o client (email, nome, id, etc.), não fornecendo dados senssíveis (senha).
 
 No nosso sistema o fluxo de funcionamento ocorre da seguinte maneira:
 
-- O backend (sujeito) monitora alterações nas tabelas de lançamentos, metas e registro de novos lançamentos pela aba Dashboards
-- O frontend (observador) é notificado e atualiza automaticamente os gráficos e painéis.
+- O frontend faz uma requisição.
+- O backend busca os dados no banco de dados.
+- Função no bakend seleciona os atributos que serão retornados pela API.
+- Por fim, backend retorna os dados para o client.
 
 ### Diagramas C4
 
