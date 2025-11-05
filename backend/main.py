@@ -13,6 +13,8 @@ from .utils.validators import (
     validate_password_strength
 )
 
+from backend.controller import user_controller
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -146,3 +148,5 @@ def get_transactions(user_id: int, db: Session = Depends(get_db)):
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Usuário com ID {user_id} não encontrado.",
         )
+
+app.include_router(user_controller.router)
