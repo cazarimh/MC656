@@ -7,10 +7,11 @@ from .database.schemas import UserCreate, UserResponse, TransactionCreate, Trans
 from .database.users import create_user_db, get_user_by_id
 from .database.transactions import create_transaction_db, get_transaction_by_user
 from .utils.password_hash import get_password_hash
+from .utils.validators import TransactionValidator as tv
+from .utils.validators import PasswordValidator as pv
 from .utils.validators import (
     validate_date_ISO_format,
     validate_email_format,
-    validate_password_strength,
     validate_unique_email
 )
 
@@ -47,7 +48,7 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
     validate_unique_email(db, user_data.email)
 
-    validate_password_strength(user_data.password)
+    pv.validate_password_strength(user_data.password)
 
     user_data.password = get_password_hash(user_data.password)
 
@@ -83,29 +84,12 @@ def create_transaction(user_id: int, transaction: TransactionCreate, db: Session
     user = get_user_by_id(db, user_id)
     if (user):
 
-        # FIXME: possível Bloater - Long Method
+        tv.validate_transaction_type(transaction)
 
-        valid_types = ["Receita", "Despesa"]
-        if transaction.type not in valid_types:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Tipo informado é inválido. Informe um entre [Receita; Despesa].",
-            )
+        tv.validate_transaction_category(transaction)
         
-        valid_categories = ["Alimentação", "Lazer", "Contas"]
-        if transaction.category not in valid_categories:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Categoria informada é inválida. Informe uma entre [Alimentação; Lazer; Contas].",
-            )
+        tv.validate_transaction_value(transaction)
 
-        if transaction.value <= 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Valor informado é inválido. Informe um valor maior ou igual a zero.",
-            )
-
-        # Valida se a data está em formato ISO String
         validate_date_ISO_format(transaction.date)
 
         return create_transaction_db(db, user.user_id, transaction)

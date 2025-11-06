@@ -25,7 +25,7 @@ def test_registered_user(test_client, mock_user):
             "date": "2025-04-20",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Fim de semana no parque"
             }
     )
@@ -37,7 +37,7 @@ def test_registered_user(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Fim de semana no parque"
     assert "transaction_id" in data
 
@@ -52,7 +52,7 @@ def test_unregistered_user(test_client, mock_user):
             "date": "2025-01-01",
             "value": 403,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Fim de semana no parque"
             }
     )
@@ -106,7 +106,7 @@ def test_empty_category(test_client, mock_user):
 )
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
-    assert response.json() == {"detail": "Categoria informada é inválida. Informe uma entre [Alimentação; Lazer; Contas]."}
+    assert response.json() == {"detail": "Categoria informada é inválida. Informe uma entre [Salário, Freelance, Investimentos, Outros]."}
 
 def test_invalid_category(test_client, mock_user):
     '''
@@ -117,14 +117,14 @@ def test_invalid_category(test_client, mock_user):
         json={
             "date": "2025-01-01",
             "value": 400,
-            "type": "Receita",
+            "type": "Despesa",
             "category": "Gasolina",
             "description": ""
         }
 )
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
-    assert response.json() == {"detail": "Categoria informada é inválida. Informe uma entre [Alimentação; Lazer; Contas]."}
+    assert response.json() == {"detail": "Categoria informada é inválida. Informe uma entre [Moradia, Alimentação, Transporte, Entretenimento, Utilidades, Saúde, Educação, Outros]."}
 
 ###################     TESTES DE DATA      ###################
 
@@ -139,7 +139,7 @@ def test_ISO1_date(test_client, mock_user):
             "date": "20250420",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Parque"
         }
 )
@@ -150,7 +150,7 @@ def test_ISO1_date(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Parque"
     assert "transaction_id" in data
 
@@ -164,7 +164,7 @@ def test_ISO2_date(test_client, mock_user):
             "date": "2025-04-20",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -175,7 +175,7 @@ def test_ISO2_date(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -189,7 +189,7 @@ def test_ISO3_date(test_client, mock_user):
             "date": "2025-04-20T12:35:20",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -200,7 +200,7 @@ def test_ISO3_date(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -214,7 +214,7 @@ def test_ISO4_date(test_client, mock_user):
             "date": "2025-04-20T12:35:20Z",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -225,7 +225,7 @@ def test_ISO4_date(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -239,7 +239,7 @@ def test_ISO5_date(test_client, mock_user):
             "date": "2025-04-20T12:35:20+02:00",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -250,7 +250,7 @@ def test_ISO5_date(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -264,7 +264,7 @@ def test_ISO6_date(test_client, mock_user):
             "date": "2025-04-20T12:35:20-03:00",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -275,7 +275,7 @@ def test_ISO6_date(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -290,7 +290,7 @@ def test_empty_date(test_client, mock_user):
             "date": "",
             "value": 400,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -308,7 +308,7 @@ def test_wrong_format_date(test_client, mock_user):
             "date": "01/01/2025",
             "value": 400,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -326,7 +326,7 @@ def test_future_date(test_client, mock_user):
             "date": "2030-01-01",
             "value": 400,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -347,7 +347,7 @@ def test_positive_integer_value(test_client, mock_user):
             "date": "2025-04-20",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -358,7 +358,7 @@ def test_positive_integer_value(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -372,7 +372,7 @@ def test_float_greater_than_1_value(test_client, mock_user):
             "date": "2025-04-20",
             "value": 20.1,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -383,7 +383,7 @@ def test_float_greater_than_1_value(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 20.1
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -397,7 +397,7 @@ def test_float_lower_than_1_value(test_client, mock_user):
             "date": "2025-04-20",
             "value": 0.201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -408,7 +408,7 @@ def test_float_lower_than_1_value(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 0.201
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -422,7 +422,7 @@ def test_large_value(test_client, mock_user):
             "date": "2025-04-20",
             "value": 201e100,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -433,7 +433,7 @@ def test_large_value(test_client, mock_user):
     assert data["transaction_date"] == "2025-04-20"
     assert data["transaction_value"] == 201e100
     assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Lazer"
+    assert data["transaction_category"] == "Entretenimento"
     assert data["transaction_description"] == "Almoço"
     assert "transaction_id" in data
 
@@ -448,7 +448,7 @@ def test_zero_value(test_client, mock_user):
             "date": "2025-01-01",
             "value": 0,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -466,7 +466,7 @@ def test_negative_integer_value(test_client, mock_user):
             "date": "2025-01-01",
             "value": -400,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -484,7 +484,7 @@ def test_float_lower_than_neg1_value(test_client, mock_user):
             "date": "2025-01-01",
             "value": -40.0,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -502,7 +502,7 @@ def test_float_greater_than_neg1_value(test_client, mock_user):
             "date": "2025-01-01",
             "value": -0.400,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -524,7 +524,7 @@ def test_create_multiple_transactions(test_client, mock_user):
             "date": "2025-04-20",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Almoço"
         }
 )
@@ -534,8 +534,8 @@ def test_create_multiple_transactions(test_client, mock_user):
             "date": "2025-04-19",
             "value": 201,
             "type": "Receita",
-            "category": "Alimentação",
-            "description": "Marmita"
+            "category": "Salário",
+            "description": ""
         }
 )
     # Verifica se os campos correspondem ao informado
@@ -545,7 +545,7 @@ def test_create_multiple_transactions(test_client, mock_user):
     assert data1["transaction_date"] == "2025-04-20"
     assert data1["transaction_value"] == 201
     assert data1["transaction_type"] == "Despesa"
-    assert data1["transaction_category"] == "Lazer"
+    assert data1["transaction_category"] == "Entretenimento"
     assert data1["transaction_description"] == "Almoço"
     assert "transaction_id" in data1
 
@@ -555,8 +555,8 @@ def test_create_multiple_transactions(test_client, mock_user):
     assert data2["transaction_date"] == "2025-04-19"
     assert data2["transaction_value"] == 201
     assert data2["transaction_type"] == "Receita"
-    assert data2["transaction_category"] == "Alimentação"
-    assert data2["transaction_description"] == "Marmita"
+    assert data2["transaction_category"] == "Salário"
+    assert data2["transaction_description"] == ""
     assert "transaction_id" in data2
 
     assert data2["transaction_id"] > data1["transaction_id"]
