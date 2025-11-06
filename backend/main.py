@@ -4,13 +4,14 @@ from sqlalchemy.orm import Session
 from .database import models
 from .database.config import engine, get_db
 from .database.schemas import UserCreate, UserResponse, TransactionCreate, TransactionResponse
-from .database.users import create_user_db, get_user_by_email, get_user_by_id
+from .database.users import create_user_db, get_user_by_id
 from .database.transactions import create_transaction_db, get_transaction_by_user
 from .utils.password_hash import get_password_hash
 from .utils.validators import (
     validate_date_ISO_format,
     validate_email_format,
-    validate_password_strength
+    validate_password_strength,
+    validate_unique_email
 )
 
 models.Base.metadata.create_all(bind=engine)
@@ -42,22 +43,13 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Insira um nome.",
         )
 
-    # Valida o formato do email
     validate_email_format(user_data.email)
 
-    # Verifica se o email já existe no banco
-    user = get_user_by_email(db, user_data.email)
-    if (user):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Este email já está cadastrado.",
-        )
+    validate_unique_email(db, user_data.email)
 
-    # Valida se a senha preenche os critérios
     validate_password_strength(user_data.password)
 
-    # Gera o hash da senha para não armazenar a senha original
-    user_data.password = get_password_hash(user_data.password) # FIXME: possível Dispensable - Comments
+    user_data.password = get_password_hash(user_data.password)
 
     return create_user_db(db, user_data)
 

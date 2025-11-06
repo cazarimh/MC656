@@ -27,7 +27,7 @@ def test_empty_name(test_client):
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
-    assert response.json() == {"detail": "Insira um nome válido."}
+    assert response.json() == {"detail": "Insira um nome."}
 
 ################### TESTES DE EMAIL ###################
 
