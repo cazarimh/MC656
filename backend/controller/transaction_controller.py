@@ -1,0 +1,117 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import Dict
+
+from backend.services import transaction_service
+from backend.database.config import get_db
+
+from backend.database.schemas import TransactionCreate
+from backend.dto.transactions_dto import (
+    TransactionRegisterResponse, 
+    TransactionsListResponse
+)
+
+router = APIRouter(
+    prefix="/users/{user_id}/transactions",
+    tags=["2. Transações (Receitas e Despesas)"] 
+)
+
+@router.post(
+    "/", # Rota: POST /users/{user_id}/transactions/
+    response_model=TransactionRegisterResponse,
+    status_code=status.HTTP_201_CREATED
+)
+def create_transaction(
+    user_id: int, 
+    transaction_data: TransactionCreate, 
+    db: Session = Depends(get_db)
+):
+    try:
+        return transaction_service.create_new_transaction(
+            user_id=user_id, transaction_data=transaction_data, db=db
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+
+@router.get(
+    "/", # Rota: GET /users/{user_id}/transactions/
+    response_model=list[TransactionsListResponse]
+)
+def get_transactions(
+    user_id: int, 
+    db: Session = Depends(get_db)
+):
+    try:
+        return transaction_service.get_transactions_by_user(user_id=user_id, db=db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+    
+@router.get(
+    "/{transaction_id}", # Rota: GET /users/{id}/transactions/{id}
+    response_model=TransactionRegisterResponse
+)
+def get_transaction(
+    user_id: int, 
+    transaction_id: int, 
+    db: Session = Depends(get_db)
+):
+    try:
+        return transaction_service.get_specific_transaction(
+            user_id=user_id, transaction_id=transaction_id, db=db
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- ROTA 4: PUT (Editar) ---
+@router.put(
+    "/{transaction_id}", # Rota: PUT /users/{id}/transactions/{id}
+    response_model=TransactionRegisterResponse
+)
+def update_transaction(
+    user_id: int, 
+    transaction_id: int, 
+    transaction_data: TransactionCreate,
+    db: Session = Depends(get_db)
+):
+    try:
+        return transaction_service.update_specific_transaction(
+            user_id=user_id, 
+            transaction_id=transaction_id, 
+            transaction_data=transaction_data, 
+            db=db
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- ROTA 5: DELETE (Excluir) ---
+@router.delete(
+    "/{transaction_id}", # Rota: DELETE /users/{id}/transactions/{id}
+    response_model=Dict[str, str]
+)
+def delete_transaction(
+    user_id: int, 
+    transaction_id: int, 
+    db: Session = Depends(get_db)
+):
+    try:
+        return transaction_service.delete_specific_transaction(
+            user_id=user_id, transaction_id=transaction_id, db=db
+        )
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))    
