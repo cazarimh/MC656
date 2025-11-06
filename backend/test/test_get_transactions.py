@@ -76,43 +76,63 @@ def test_with_transactions(test_client, mock_user_and_transactions):
     Testa se o sistema retorna uma lista com apenas as transações de um usuário cadastrado
     '''
 
-    # FIXME: possível Dispensable - Comments
+    user_A = test_client.post(
+        "/users",
+        json={"name": "Maria",
+              "email": "emailtestA@teste.com",
+              "password": "SenhaForte@123"
+              }
+    ).json()
 
-    # Cria o usuário A
-    user_A = test_client.post("/users", json={"name": "Maria", "email": "emailtestA@teste.com", "password": "SenhaForte@123"}).json()
+    user_B = test_client.post(
+        "/users",
+        json={"name": "Henrique",
+              "email": "emailtestB@teste.com",
+              "password": "SenhaForte@123"
+              }
+    ).json()
 
-    # Cria o usuário B
-    user_B = test_client.post("/users", json={"name": "Henrique", "email": "emailtestB@teste.com", "password": "SenhaForte@123"}).json()
+    test_client.post(
+        f"/{user_A["user_id"]}/transactions",
+        json={"date": "2025-09-02",
+              "value": 150,
+              "type": "Despesa",
+              "category": "Lazer",
+              "description": ""
+              }
+    )
 
-    # Cria transações para o usuário A
-    test_client.post(f"/{user_A["user_id"]}/transactions", json={"date": "2025-09-02", "value": 150, "type": "Despesa", "category": "Lazer", "description": ""})
+    test_client.post(
+        f"/{user_B["user_id"]}/transactions",
+        json={"date": "2025-09-03",
+              "value": 75,
+              "type": "Despesa",
+              "category": "Alimentação",
+              "description": "Almoço"
+              }
+    )
 
-    # Cria transações para o usuário B
-    test_client.post(f"/{user_B["user_id"]}/transactions", json={"date": "2025-09-03", "value": 75, "type": "Despesa", "category": "Alimentação", "description": "Almoço"})
+    test_client.post(
+        f"/{user_A["user_id"]}/transactions",
+        json={"date": "2025-07-25",
+              "value": 350,
+              "type": "Despesa",
+              "category": "Alimentação",
+              "description": "Janta"
+              }
+    )
 
-    # Cria transações para o usuário A
-    test_client.post(f"/{user_A["user_id"]}/transactions", json={"date": "2025-07-25", "value": 350, "type": "Despesa", "category": "Alimentação", "description": "Janta"})
-
-    # Busca as transações do usuários
     response_mock = test_client.get(f"/{mock_user_and_transactions["user_id"]}/transactions")
     response_A = test_client.get(f"/{user_A["user_id"]}/transactions")
     response_B = test_client.get(f"/{user_B["user_id"]}/transactions")
 
-    # Verifica se o retorno está de acordo com o esperado
-    assert response_mock.status_code == 200
-    transactions_list_mock = response_mock.json()
-    assert len(transactions_list_mock) == 3
-    for transaction in transactions_list_mock:
-        assert transaction["user_id"] == mock_user_and_transactions["user_id"]
+    def assert_test(response, num_transactions, owner):
+        assert response.status_code == 200
+        transactions_list = response.json()
+        assert len(transactions_list) == num_transactions
+        for transaction in transactions_list:
+            assert transaction["user_id"] == owner["user_id"]
 
-    assert response_A.status_code == 200
-    transactions_list_A = response_A.json()
-    assert len(transactions_list_A) == 2
-    for transaction in transactions_list_A:
-        assert transaction["user_id"] == user_A["user_id"]
-
-    assert response_B.status_code == 200
-    transactions_list_B = response_B.json()
-    assert len(transactions_list_B) == 1
-    for transaction in transactions_list_B:
-        assert transaction["user_id"] == user_B["user_id"]
+    assert_test(response_mock, 3, mock_user_and_transactions)
+    assert_test(response_A, 2, user_A)
+    assert_test(response_B, 1, user_B)
