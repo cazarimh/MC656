@@ -169,36 +169,6 @@ class PasswordValidator:
         PasswordValidator.__verify_number(password)
         PasswordValidator.__verify_special_char(password)
 
-        # if len(password) < 8:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="A senha deve conter ao menos 8 caracteres.",
-        #     )
-        
-        # if not re.search(r"[A-Z]", password):
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="A senha deve conter ao menos uma letra maiúscula.",
-        #     )
-
-        # if not re.search(r"[a-z]", password):
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="A senha deve conter ao menos uma letra minúscula.",
-        #     )
-        
-        # if not re.search(r"\d", password):
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="A senha deve conter ao menos um dígito.",
-        #     )
-
-        # if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="A senha deve conter pelo menos um caractere especial.",
-        #     )
-
         # Retorna nulo caso todas as verificações forem válidas
         return None
 
@@ -223,6 +193,31 @@ def validate_email_format(email: str):
         )
 
     # Retorna nulo caso o email seja válido
+    return None
+
+def validate_unique_email(db, email: str):
+    '''
+    Verifica se o email informado pelo usuário ainda não foi cadastrado
+
+    Parâmetros:
+    email (string): string do email cadastrado pelo usuário
+
+    Retorna:
+    None
+
+    Levanta:
+    HTTPException: se o email já estiver cadastrado
+    '''
+    from ..database.users import get_user_by_email
+    
+    user = get_user_by_email(db, email)
+    if (user):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Este email já está cadastrado.",
+        )
+    
+    # Retorna nulo cado a data seja válida
     return None
 
 def validate_date_ISO_format(date: str):
