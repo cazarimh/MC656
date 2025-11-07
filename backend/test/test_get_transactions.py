@@ -18,7 +18,7 @@ def mock_user_and_transactions(test_client):
             "date": "2025-04-20",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Fim de semana no parque"
             }
     )
@@ -40,8 +40,8 @@ def mock_user_and_transactions(test_client):
             "date": "2025-04-22",
             "value": 201,
             "type": "Receita",
-            "category": "Contas",
-            "description": "Salário"
+            "category": "Salário",
+            "description": ""
             }
     )
 
@@ -97,8 +97,8 @@ def test_with_transactions(test_client, mock_user_and_transactions):
         json={"date": "2025-09-02",
               "value": 150,
               "type": "Despesa",
-              "category": "Lazer",
-              "description": ""
+              "category": "Entretenimento",
+              "description": "Cinema"
               }
     )
 
@@ -116,9 +116,9 @@ def test_with_transactions(test_client, mock_user_and_transactions):
         f"/{user_A["user_id"]}/transactions",
         json={"date": "2025-07-25",
               "value": 350,
-              "type": "Despesa",
-              "category": "Alimentação",
-              "description": "Janta"
+              "type": "Receita",
+              "category": "Salário",
+              "description": ""
               }
     )
 
