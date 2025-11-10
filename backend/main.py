@@ -1,18 +1,28 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy.orm import Session
 
+from .controller import user_controller
+from .controller import transaction_controller
+from .adapter.transactions_adapter import TransactionAdapter
+from .adapter.user_adapter import UserAdapter
 from .database import models
 from .database.config import engine, get_db
-from .database.schemas import UserCreate, UserResponse, TransactionCreate, TransactionResponse
+from .database.schemas import (
+    TransactionCreate,
+    UserCreate,
+)
 from .database.users import create_user_db, get_user_by_id
 from .database.transactions import create_transaction_db, get_transaction_by_user
+from .dto.transactions_dto import TransactionRegisterResponse, TransactionsListResponse
+from .dto.user_dto import UserRegisterResponse
 from .utils.password_hash import get_password_hash
 from .utils.validators import TransactionValidator as tv
 from .utils.validators import PasswordValidator as pv
 from .utils.validators import (
     validate_date_ISO_format,
     validate_email_format,
-    validate_unique_email
+    validate_unique_email,
+    validate_password_strength,
 )
 
 models.Base.metadata.create_all(bind=engine)
@@ -20,7 +30,9 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-@app.post("/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@app.post(
+    "/users", response_model=UserRegisterResponse, status_code=status.HTTP_201_CREATED
+)
 def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     """
     Criação de um novo usuário no sistema
@@ -38,7 +50,7 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
         - 400 BAD REQUEST se o formato do email não for válido ou a senha não atender os critérios de segurança
     """
 
-    if (not user_data.name):
+    if not user_data.name:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Insira um nome.",
@@ -52,11 +64,18 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
     user_data.password = get_password_hash(user_data.password)
 
-    return create_user_db(db, user_data)
+    user = create_user_db(db, user_data)
+    return UserAdapter.to_register_response(user, "Success")
 
 
-@app.post("/{user_id}/transactions", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
-def create_transaction(user_id: int, transaction: TransactionCreate, db: Session = Depends(get_db)):
+@app.post(
+    "/{user_id}/transactions",
+    response_model=TransactionRegisterResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_transaction(
+    user_id: int, transaction_create: TransactionCreate, db: Session = Depends(get_db)
+):
     """
     Criação de uma nova transação no sistema
 
@@ -82,7 +101,7 @@ def create_transaction(user_id: int, transaction: TransactionCreate, db: Session
     """
 
     user = get_user_by_id(db, user_id)
-    if (user):
+    if user:
 
         tv.validate_transaction_type(transaction)
 
@@ -92,7 +111,8 @@ def create_transaction(user_id: int, transaction: TransactionCreate, db: Session
 
         validate_date_ISO_format(transaction.date)
 
-        return create_transaction_db(db, user.user_id, transaction)
+        transaction = create_transaction_db(db, user.user_id, transaction_create)
+        return TransactionAdapter.to_response(transaction)
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -100,7 +120,7 @@ def create_transaction(user_id: int, transaction: TransactionCreate, db: Session
         )
 
 
-@app.get("/{user_id}/transactions", response_model=list[TransactionResponse])
+@app.get("/{user_id}/transactions", response_model=list[TransactionsListResponse])
 def get_transactions(user_id: int, db: Session = Depends(get_db)):
     """
     Lista todos os gastos de um usuário específico
@@ -118,10 +138,15 @@ def get_transactions(user_id: int, db: Session = Depends(get_db)):
     """
 
     user = get_user_by_id(db, user_id)
-    if (user):
-        return get_transaction_by_user(db, user.user_id)
+    if user:
+        transactions = get_transaction_by_user(db, user.user_id)
+        return TransactionAdapter.to_list_response(transactions)
     else:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Usuário com ID {user_id} não encontrado.",
         )
+
+
+app.include_router(user_controller.router)
+app.include_router(transaction_controller.router)

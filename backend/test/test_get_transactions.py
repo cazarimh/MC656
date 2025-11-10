@@ -13,7 +13,7 @@ def mock_user_and_transactions(test_client):
     user = user_response.json()
 
     test_client.post(
-        f"/{user["user_id"]}/transactions",
+        f"/{user["user"]["id"]}/transactions",
         json={
             "date": "2025-04-20",
             "value": 201,
@@ -24,7 +24,7 @@ def mock_user_and_transactions(test_client):
     )
 
     test_client.post(
-        f"/{user["user_id"]}/transactions",
+        f"/{user["user"]["id"]}/transactions",
         json={
             "date": "2025-04-21",
             "value": 201,
@@ -35,7 +35,7 @@ def mock_user_and_transactions(test_client):
     )
 
     test_client.post(
-        f"/{user["user_id"]}/transactions",
+        f"/{user["user"]["id"]}/transactions",
         json={
             "date": "2025-04-22",
             "value": 201,
@@ -53,9 +53,9 @@ def test_unregistered_user(test_client, mock_user_and_transactions):
     '''
     Testa se o sistema retorna um erro na busca pelas transações de um usuário não cadastrado
     '''
-    response = test_client.get(f"/{mock_user_and_transactions["user_id"]+1}/transactions")
+    response = test_client.get(f"/{mock_user_and_transactions["user"]["id"]+1}/transactions")
     assert response.status_code == 404
-    assert response.json() == {"detail": f"Usuário com ID {mock_user_and_transactions["user_id"]+1} não encontrado."}
+    assert response.json() == {"detail": f"Usuário com ID {mock_user_and_transactions["user"]["id"]+1} não encontrado."}
 
 ###################     TESTES DE TRANSAÇÕES   ###################
 
@@ -66,7 +66,7 @@ def test_no_transactions(test_client, mock_user_and_transactions):
     user_response = test_client.post("/users", json={"name": "Ciclano Testador", "email": "emailsucess@teste.com", "password": "Senha@Forte123"})
     user = user_response.json()
 
-    response = test_client.get(f"/{user["user_id"]}/transactions")
+    response = test_client.get(f"/{user["user"]["id"]}/transactions")
 
     assert response.status_code == 200
     assert response.json() == []
@@ -93,7 +93,7 @@ def test_with_transactions(test_client, mock_user_and_transactions):
     ).json()
 
     test_client.post(
-        f"/{user_A["user_id"]}/transactions",
+        f"/{user_A["user"]["id"]}/transactions",
         json={"date": "2025-09-02",
               "value": 150,
               "type": "Despesa",
@@ -103,7 +103,7 @@ def test_with_transactions(test_client, mock_user_and_transactions):
     )
 
     test_client.post(
-        f"/{user_B["user_id"]}/transactions",
+        f"/{user_B["user"]["id"]}/transactions",
         json={"date": "2025-09-03",
               "value": 75,
               "type": "Despesa",
@@ -113,7 +113,7 @@ def test_with_transactions(test_client, mock_user_and_transactions):
     )
 
     test_client.post(
-        f"/{user_A["user_id"]}/transactions",
+        f"/{user_A["user"]["id"]}/transactions",
         json={"date": "2025-07-25",
               "value": 350,
               "type": "Receita",
@@ -122,16 +122,17 @@ def test_with_transactions(test_client, mock_user_and_transactions):
               }
     )
 
-    response_mock = test_client.get(f"/{mock_user_and_transactions["user_id"]}/transactions")
-    response_A = test_client.get(f"/{user_A["user_id"]}/transactions")
-    response_B = test_client.get(f"/{user_B["user_id"]}/transactions")
+    response_mock = test_client.get(f"/{mock_user_and_transactions["user"]["id"]}/transactions")
+    response_A = test_client.get(f"/{user_A["user"]["id"]}/transactions")
+    response_B = test_client.get(f"/{user_B["user"]["id"]}/transactions")
 
     def assert_test(response, num_transactions, owner):
         assert response.status_code == 200
         transactions_list = response.json()
         assert len(transactions_list) == num_transactions
         for transaction in transactions_list:
-            assert transaction["user_id"] == owner["user_id"]
+            assert transaction["user_id"] == owner["user"]["id"]
+            assert transaction is not None
 
     assert_test(response_mock, 3, mock_user_and_transactions)
     assert_test(response_A, 2, user_A)
