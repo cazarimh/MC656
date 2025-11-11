@@ -98,10 +98,23 @@ def get_specific_transaction(
     user_id: int, transaction_id: int, db: Session
 ) -> TransactionRegisterResponse:
     # Usa a função helper para buscar e verificar a transação
-    transaction_model = _get_transaction_and_verify_user(db, user_id, transaction_id)
+    # 1. Verifica se o usuário existe
+    user = crud_user.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
-    # Converte para DTO e retorna
-    return TransactionMapper.to_response(transaction_model)
+    # Busca as transações
+    adapter = TransactionAdapter(db)
+    transactions_list = adapter.get_transactions(user_id)
+
+    transactions = TransactionMapper.to_list_response(transactions_list)
+    for t in transactions:
+        if t.transaction_id == transaction_id:
+            return t
+    
+    raise HTTPException(status_code=404, detail="Transação Não Encontrada.")
 
 
 # --- FUNÇÃO 3: PUT (Editar) ---
