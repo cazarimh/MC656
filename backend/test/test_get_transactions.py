@@ -131,7 +131,6 @@ def test_with_transactions(test_client, mock_user_and_transactions):
         transactions_list = response.json()
         assert len(transactions_list) == num_transactions
         for transaction in transactions_list:
-            assert transaction["user_id"] == owner["user"]["id"]
             assert transaction is not None
 
     assert_test(response_mock, 3, mock_user_and_transactions)

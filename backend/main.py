@@ -22,7 +22,6 @@ from .utils.validators import (
     validate_date_ISO_format,
     validate_email_format,
     validate_unique_email,
-    validate_password_strength,
 )
 
 models.Base.metadata.create_all(bind=engine)
@@ -103,16 +102,16 @@ def create_transaction(
     user = get_user_by_id(db, user_id)
     if user:
 
-        tv.validate_transaction_type(transaction)
+        tv.validate_transaction_type(transaction_create)
 
-        tv.validate_transaction_category(transaction)
+        tv.validate_transaction_category(transaction_create)
         
-        tv.validate_transaction_value(transaction)
+        tv.validate_transaction_value(transaction_create)
 
-        validate_date_ISO_format(transaction.date)
+        validate_date_ISO_format(transaction_create.date)
 
-        transaction = create_transaction_db(db, user.user_id, transaction_create)
-        return TransactionAdapter.to_response(transaction)
+        new_transaction = create_transaction_db(db, user.user_id, transaction_create)
+        return TransactionAdapter.to_response(new_transaction)
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
