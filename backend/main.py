@@ -11,15 +11,17 @@ from .database.schemas import (
     TransactionCreate,
     UserCreate,
 )
+from .database.users import create_user_db, get_user_by_id
 from .database.transactions import create_transaction_db, get_transaction_by_user
-from .database.users import create_user_db, get_user_by_email, get_user_by_id
 from .dto.transactions_dto import TransactionRegisterResponse, TransactionsListResponse
 from .dto.user_dto import UserRegisterResponse
 from .utils.password_hash import get_password_hash
+from .utils.validators import TransactionValidator as tv
+from .utils.validators import PasswordValidator as pv
 from .utils.validators import (
     validate_date_ISO_format,
     validate_email_format,
-    validate_password_strength,
+    validate_unique_email,
 )
 
 models.Base.metadata.create_all(bind=engine)
@@ -42,31 +44,23 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
     Levanta:
     HTTPException:
-        - 400 BAD REQUEST se o campo nomes estiver vazio
+        - 400 BAD REQUEST se o campo nome estiver vazio
         - 400 BAD REQUEST se o email já estiver cadastrado
         - 400 BAD REQUEST se o formato do email não for válido ou a senha não atender os critérios de segurança
     """
 
-    if user_data.name == "":
+    if not user_data.name:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Insira um nome válido.",
+            detail="Insira um nome.",
         )
 
-    # Valida o formato do email
     validate_email_format(user_data.email)
 
-    # Verifica se o email já existe no banco
-    if get_user_by_email(db, user_data.email):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Este email já está cadastrado.",
-        )
+    validate_unique_email(db, user_data.email)
 
-    # Valida se a senha preenche os critérios
-    validate_password_strength(user_data.password)
+    pv.validate_password_strength(user_data.password)
 
-    # Gera o hash da senha para não armazenar a senha original
     user_data.password = get_password_hash(user_data.password)
 
     user = create_user_db(db, user_data)
@@ -107,31 +101,17 @@ def create_transaction(
 
     user = get_user_by_id(db, user_id)
     if user:
-        valid_types = ["Receita", "Despesa"]
-        if transaction_create.type not in valid_types:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Tipo informado é inválido. Informe um entre [Receita; Despesa].",
-            )
 
-        valid_categories = ["Alimentação", "Lazer", "Contas"]
-        if transaction_create.category not in valid_categories:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Categoria informada é inválida. Informe uma entre [Alimentação; Lazer; Contas].",
-            )
+        tv.validate_transaction_type(transaction_create)
 
-        if transaction_create.value <= 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Valor informado é inválido. Informe um valor maior ou igual a zero.",
-            )
+        tv.validate_transaction_category(transaction_create)
+        
+        tv.validate_transaction_value(transaction_create)
 
-        # Valida se a data está em formato ISO String
         validate_date_ISO_format(transaction_create.date)
 
-        transaction = create_transaction_db(db, user.user_id, transaction_create)
-        return TransactionAdapter.to_response(transaction)
+        new_transaction = create_transaction_db(db, user.user_id, transaction_create)
+        return TransactionAdapter.to_response(new_transaction)
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

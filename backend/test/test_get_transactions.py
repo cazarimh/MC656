@@ -18,7 +18,7 @@ def mock_user_and_transactions(test_client):
             "date": "2025-04-20",
             "value": 201,
             "type": "Despesa",
-            "category": "Lazer",
+            "category": "Entretenimento",
             "description": "Fim de semana no parque"
             }
     )
@@ -40,8 +40,8 @@ def mock_user_and_transactions(test_client):
             "date": "2025-04-22",
             "value": 201,
             "type": "Receita",
-            "category": "Contas",
-            "description": "Salário"
+            "category": "Salário",
+            "description": ""
             }
     )
 
@@ -75,41 +75,64 @@ def test_with_transactions(test_client, mock_user_and_transactions):
     '''
     Testa se o sistema retorna uma lista com apenas as transações de um usuário cadastrado
     '''
-    # Cria o usuário A
-    user_A = test_client.post("/users", json={"name": "Maria", "email": "emailtestA@teste.com", "password": "SenhaForte@123"}).json()
 
-    # Cria o usuário B
-    user_B = test_client.post("/users", json={"name": "Henrique", "email": "emailtestB@teste.com", "password": "SenhaForte@123"}).json()
+    user_A = test_client.post(
+        "/users",
+        json={"name": "Maria",
+              "email": "emailtestA@teste.com",
+              "password": "SenhaForte@123"
+              }
+    ).json()
 
-    # Cria transações para o usuário A
-    test_client.post(f"/{user_A["user"]["id"]}/transactions", json={"date": "2025-09-02", "value": 150, "type": "Despesa", "category": "Lazer", "description": ""})
+    user_B = test_client.post(
+        "/users",
+        json={"name": "Henrique",
+              "email": "emailtestB@teste.com",
+              "password": "SenhaForte@123"
+              }
+    ).json()
 
-    # Cria transações para o usuário B
-    test_client.post(f"/{user_B["user"]["id"]}/transactions", json={"date": "2025-09-03", "value": 75, "type": "Despesa", "category": "Alimentação", "description": "Almoço"})
+    test_client.post(
+        f"/{user_A["user"]["id"]}/transactions",
+        json={"date": "2025-09-02",
+              "value": 150,
+              "type": "Despesa",
+              "category": "Entretenimento",
+              "description": "Cinema"
+              }
+    )
 
-    # Cria transações para o usuário A
-    test_client.post(f"/{user_A["user"]["id"]}/transactions", json={"date": "2025-07-25", "value": 350, "type": "Despesa", "category": "Alimentação", "description": "Janta"})
+    test_client.post(
+        f"/{user_B["user"]["id"]}/transactions",
+        json={"date": "2025-09-03",
+              "value": 75,
+              "type": "Despesa",
+              "category": "Alimentação",
+              "description": "Almoço"
+              }
+    )
 
-    # Busca as transações do usuários
+    test_client.post(
+        f"/{user_A["user"]["id"]}/transactions",
+        json={"date": "2025-07-25",
+              "value": 350,
+              "type": "Receita",
+              "category": "Salário",
+              "description": ""
+              }
+    )
+
     response_mock = test_client.get(f"/{mock_user_and_transactions["user"]["id"]}/transactions")
     response_A = test_client.get(f"/{user_A["user"]["id"]}/transactions")
     response_B = test_client.get(f"/{user_B["user"]["id"]}/transactions")
 
-    # Verifica se o retorno está de acordo com o esperado
-    assert response_mock.status_code == 200
-    transactions_list_mock = response_mock.json()
-    assert len(transactions_list_mock) == 3
-    for transaction in transactions_list_mock:
-        assert transaction is not None
+    def assert_test(response, num_transactions, owner):
+        assert response.status_code == 200
+        transactions_list = response.json()
+        assert len(transactions_list) == num_transactions
+        for transaction in transactions_list:
+            assert transaction is not None
 
-    assert response_A.status_code == 200
-    transactions_list_A = response_A.json()
-    assert len(transactions_list_A) == 2
-    for transaction in transactions_list_A:
-        assert transaction is not None
-
-    assert response_B.status_code == 200
-    transactions_list_B = response_B.json()
-    assert len(transactions_list_B) == 1
-    for transaction in transactions_list_B:
-        assert transaction is not None
+    assert_test(response_mock, 3, mock_user_and_transactions)
+    assert_test(response_A, 2, user_A)
+    assert_test(response_B, 1, user_B)

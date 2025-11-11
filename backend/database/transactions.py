@@ -23,13 +23,13 @@ def get_transaction_by_user(db: Session, user_id: int):
 
 # TODO: funções de listar transações mas com filtros aplicados
 
-def update_transaction(db: Session, transaction_id: int, new_date: str, new_value: float, new_category: str, new_description: str):
+def update_transaction(db: Session, transaction_id: int, transaction_new_data: TransactionCreate):
     transaction = get_transaction_by_id(db, transaction_id)
     if (transaction):
-        transaction.transaction_date = dt.fromisoformat(new_date)
-        transaction.transaction_value = new_value
-        transaction.transaction_category = new_category
-        transaction.transaction_description = new_description
+        transaction.transaction_date = dt.fromisoformat(transaction_new_data.date)
+        transaction.transaction_value = transaction_new_data.value
+        transaction.transaction_category = transaction_new_data.category
+        transaction.transaction_description = transaction_new_data.description
         db.commit()
         db.refresh(transaction)
 
