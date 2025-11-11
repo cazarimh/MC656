@@ -14,8 +14,7 @@ O projeto consiste no desenvolvimento de um sistema digital voltado para auxilia
 1. Navegue até a pasta do backend: `cd backend`
 2. Crie e ative um ambiente virtual: `python -m venv venv` e `source venv/Scripts/activate`
 3. Instale as dependências: `pip install -r requirements.txt`
-4. Volte ao diretório raiz do projeto `cd ..`
-5. Rode o servidor: `uvicorn backend.main:app --reload`
+4. Rode o servidor: `uvicorn main:app --reload`
 
 ### Frontend
 
@@ -97,14 +96,16 @@ Além disso, temos também o Banco de Dados (SQLite) que persiste as informaçõ
 
 ### Padrão de Projeto
 
-Optamos por utilizar o padrão de projeto Adapter para o nosso sistema, pois o backend não pode retornar os dados para o frontend da maneira que eles sãoa armazenados no banco de dados, oque causaria brechas de segurnaça. Por exemplo, ao fazer uma requisição para buscar os dados de um usuário, a resposta da API contém apenas os dados nescessários para o client (email, nome, id, etc.), não fornecendo dados senssíveis (senha).
+Optamos por utilizar o padrão de projeto Adapter no backend para permitir que o sistema trabalhe com múltiplas fontes de dados de forma transparente e organizada.
+A responsabilidade de decidir de onde os dados serão obtidos (banco de dados ou arquivo JSON) foi centralizada na camada Adapter, evitando que essa lógica ficasse espalhada pelos serviços.
 
-No nosso sistema o fluxo de funcionamento ocorre da seguinte maneira:
+O funcionamento ocorre da seguinte forma:
 
-- O frontend faz uma requisição.
-- O backend busca os dados no banco de dados.
-- Função no bakend seleciona os atributos que serão retornados pela API.
-- Por fim, backend retorna os dados para o client.
+- O Service solicita os dados ao Adapter, sem precisar saber a origem deles.
+- O Adapter, com base em uma variável de ambiente (DATA_SOURCE), decide se deve buscar os dados no banco de dados ou em um arquivo JSON.
+
+Essa abordagem facilita futuras extensões do sistema, por exemplo, permitir que o usuário importe um arquivo JSON com suas receitas e despesas (como um extrato bancário), sem depender do cadastro manual via API.
+Dessa forma, o Adapter atua como uma camada intermediária entre as diferentes fontes de dados e a lógica de negócio, mantendo o código mais limpo, desacoplado e fácil de manter.
 
 ### Diagramas C4
 
