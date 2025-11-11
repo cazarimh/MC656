@@ -3,7 +3,7 @@ from datetime import datetime as dt
 from fastapi import HTTPException, status
 
 class TransactionValidator:
-    from ..database.schemas import TransactionCreate
+    from database.schemas import TransactionCreate
 
     @staticmethod
     def validate_transaction_type(transaction: TransactionCreate):

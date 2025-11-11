@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from backend.database import users as crud_user
-from backend.database.schemas import UserCreate
-from backend.dto.user_dto import UserLogin, UserRegisterResponse, UserResponse
-from backend.adapter.user_adapter import UserAdapter
-from backend.utils.password_hash import get_password_hash, verify_password
+from database import users as crud_user
+from database.schemas import UserCreate
+from dto.user_dto import UserLogin, UserRegisterResponse, UserResponse
+from mapper.user_mapper import UserMapper
+from utils.password_hash import get_password_hash, verify_password
 
 def create_new_user(user_data: UserCreate, db: Session) -> UserRegisterResponse:
     # Verificar se o email já existe
@@ -28,7 +28,7 @@ def create_new_user(user_data: UserCreate, db: Session) -> UserRegisterResponse:
     # Chamamos o adapter para criar no banco
     new_user = crud_user.create_user_db(db, user=user_data_to_db)
     
-    return UserAdapter.to_register_response(new_user, "Success")
+    return UserMapper.to_register_response(new_user, "Success")
 
 def authenticate_user(user_data: UserLogin, db: Session):
     # Busca o usuário pelo email
@@ -64,4 +64,4 @@ def get_user_info(user_id: int, db: Session) -> UserResponse:
         )
         
     # Retorna o usuário
-    return UserAdapter.to_response(db_user)
+    return UserMapper.to_response(db_user)

@@ -1,0 +1,29 @@
+[
+  {
+    "user_id": 1,
+    "transaction_id": 101,
+    "transaction_date": "2025-01-10",
+    "transaction_value": 2500.0,
+    "transaction_type": "receita",
+    "transaction_category": "Salário",
+    "transaction_description": "Pagamento mensal"
+  },
+  {
+    "user_id": 1,
+    "transaction_id": 102,
+    "transaction_date": "2025-01-12",
+    "transaction_value": 150.0,
+    "transaction_type": "despesa",
+    "transaction_category": "Alimentação",
+    "transaction_description": "Supermercado"
+  },
+  {
+    "user_id": 2,
+    "transaction_id": 201,
+    "transaction_date": "2025-01-15",
+    "transaction_value": 300.0,
+    "transaction_type": "despesa",
+    "transaction_category": "Transporte",
+    "transaction_description": "Combustível"
+  }
+]

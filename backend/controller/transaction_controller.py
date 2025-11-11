@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict
 
-from backend.services import transaction_service
-from backend.database.config import get_db
+from services import transaction_service
+from database.config import get_db
 
-from backend.database.schemas import TransactionCreate
-from backend.dto.transactions_dto import (
+from database.schemas import TransactionCreate
+from dto.transactions_dto import (
     TransactionRegisterResponse, 
     TransactionsListResponse
 )
