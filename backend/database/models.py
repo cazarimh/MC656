@@ -11,6 +11,7 @@ class User(Base):
     user_hashed_password = Column(String, index=True)
 
     user_transactions = relationship('Transaction', back_populates='user', cascade='all, delete-orphan')
+    user_goals = relationship('Goal', back_populates='user', cascade='all, delete-orphan')
 
 class Transaction(Base):
     __tablename__ = 'transactions'
@@ -24,3 +25,14 @@ class Transaction(Base):
     transaction_description = Column(String, nullable=True, index=True)
 
     user = relationship('User', back_populates='user_transactions')
+
+class Goal(Base):
+    __tablename__ = 'goals'
+
+    user_id = Column(Integer, ForeignKey('users.user_id'), index=True)
+    goal_id = Column(Integer, primary_key=True, index=True)
+    goal_value = Column(Float, index=True)
+    goal_type = Column(String, index=True)
+    goal_category = Column(String, index=True)
+
+    user = relationship('User', back_populates='user_goals')

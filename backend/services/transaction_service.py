@@ -13,6 +13,10 @@ from utils.validators import validate_date_ISO_format
 from adapter.transactions_adapter import TransactionAdapter
 from mapper.transactions_mapper import TransactionMapper
 
+from backend.utils.validators import (
+    FieldValidator as val,
+    validate_date_ISO_format
+)
 
 def create_new_transaction(
     user_id: int, transaction_data: TransactionCreate, db: Session
@@ -25,14 +29,13 @@ def create_new_transaction(
             detail="Usuário não cadastrado.",
         )
 
-    # Validar o valor
-    if transaction_data.value <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Valor informado é inválido. Informe um valor maior ou igual a zero.",
-        )
+    # Validações
+    val.validate_type(transaction_data.type)
 
-    # Validar a data
+    val.validate_category(transaction_data.category, transaction_data.type)
+    
+    val.validate_value(transaction_data.value)
+
     validate_date_ISO_format(transaction_data.date)
 
     # Chama o crud de transação
@@ -123,21 +126,20 @@ def update_specific_transaction(
 ) -> TransactionRegisterResponse:
     # Usa a helper para garantir que temos permissão
     _get_transaction_and_verify_user(db, user_id, transaction_id)
+    
+    val.validate_type(transaction_data.type)
 
-    # Valida os novos dados
-    if transaction_data.value <= 0:
-        raise HTTPException(status_code=400, detail="Valor inválido.")
-
+    val.validate_category(transaction_data.category, transaction_data.type)
+    
+    val.validate_value(transaction_data.value)
+        
     validate_date_ISO_format(transaction_data.date)
 
     # Chama a função de update do banco
     crud_transactions.update_transaction(
         db=db,
         transaction_id=transaction_id,
-        new_date=transaction_data.date,
-        new_value=transaction_data.value,
-        new_category=transaction_data.category,
-        new_description=transaction_data.description,
+        transaction_new_data=transaction_data
     )
 
     # Busca o objeto atualizado no banco para retornar
