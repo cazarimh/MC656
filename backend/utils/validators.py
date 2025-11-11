@@ -2,16 +2,15 @@ import re
 from datetime import datetime as dt
 from fastapi import HTTPException, status
 
-class TransactionValidator:
-    from ..database.schemas import TransactionCreate
+class FieldValidator:
 
     @staticmethod
-    def validate_transaction_type(transaction: TransactionCreate):
+    def validate_type(input_type: str):
         '''
         Verifica se o tipo da transação é um entre [Receita, Despesa]
         
         Parâmetros:
-        transaction (TransactionCreate): informações para criação da transação
+        input_type (string): tipo da meta ou transação
 
         Retorna:
         None
@@ -20,7 +19,7 @@ class TransactionValidator:
         HTTPException: se o tipo for inválido
         '''
         valid_types = ["Receita", "Despesa"]
-        if transaction.type not in valid_types:
+        if input_type not in valid_types:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Tipo informado é inválido. Informe um entre [Receita, Despesa].",
@@ -30,14 +29,15 @@ class TransactionValidator:
         return None
 
     @staticmethod
-    def validate_transaction_category(transaction: TransactionCreate):
+    def validate_category(input_category: str, input_type: str):
         '''
         Verifica se a categoria da transação é um entre
         - [Salário, Freelance, Investimentos, Outros] para Receita
         - [Moradia, Alimentação, Transporte, Entretenimento, Utilidades, Saúde, Educação, Outros] para Despesa
         
         Parâmetros:
-        transaction (TransactionCreate): informações para criação da transação
+        input_category (string): categoria da meta ou transação
+        input_type (string): tipo da meta ou transação
 
         Retorna:
         None
@@ -48,8 +48,8 @@ class TransactionValidator:
         valid_categories = {"Receita": ["Salário", "Freelance", "Investimentos", "Outros"],
                             "Despesa":["Moradia", "Alimentação", "Transporte", "Entretenimento", "Utilidades", "Saúde", "Educação", "Outros"]}
 
-        if transaction.category not in valid_categories[transaction.type]:
-            if transaction.type == "Receita":
+        if input_category not in valid_categories[input_type]:
+            if input_type == "Receita":
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Categoria informada é inválida. Informe uma entre [Salário, Freelance, Investimentos, Outros].",
@@ -64,12 +64,12 @@ class TransactionValidator:
         return None
 
     @staticmethod
-    def validate_transaction_value(transaction: TransactionCreate):
+    def validate_value(input_value: float):
         '''
         Verifica se o valor da transação é um número positivo
         
         Parâmetros:
-        transaction (TransactionCreate): informações para criação da transação
+        input_value (float): valor da meta ou transação
 
         Retorna:
         None
@@ -77,7 +77,7 @@ class TransactionValidator:
         Levanta:
         HTTPException: se o valor for inválido
         '''
-        if transaction.value <= 0:
+        if input_value <= 0:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Valor informado é inválido. Informe um valor maior ou igual a zero.",

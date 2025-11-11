@@ -1,6 +1,21 @@
 from pydantic import BaseModel
 from datetime import date
 
+class GoalCreate(BaseModel):
+    value: float
+    type: str
+    category: str
+
+class GoalResponse(BaseModel):
+    user_id: int
+    goal_id: int
+    goal_value: float
+    goal_type: str
+    goal_category: str
+
+    class Config:
+        orm_mode = True
+
 class TransactionCreate(BaseModel):
     date: str
     value: float
