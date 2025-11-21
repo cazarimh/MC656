@@ -13,7 +13,7 @@ from utils.validators import validate_date_ISO_format
 from adapter.transactions_adapter import TransactionAdapter
 from mapper.transactions_mapper import TransactionMapper
 
-from backend.utils.validators import (
+from utils.validators import (
     FieldValidator as val,
     validate_date_ISO_format
 )

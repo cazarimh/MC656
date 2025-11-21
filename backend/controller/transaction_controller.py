@@ -12,12 +12,12 @@ from dto.transactions_dto import (
 )
 
 router = APIRouter(
-    prefix="/users/{user_id}/transactions",
+    prefix="/{user_id}/transactions",
     tags=["2. Transações (Receitas e Despesas)"] 
 )
 
 @router.post(
-    "/", # Rota: POST /users/{user_id}/transactions/
+    "/", # Rota: POST /{user_id}/transactions/
     response_model=TransactionRegisterResponse,
     status_code=status.HTTP_201_CREATED
 )
@@ -39,7 +39,7 @@ def create_transaction(
         )
 
 @router.get(
-    "/", # Rota: GET /users/{user_id}/transactions/
+    "/", # Rota: GET /{user_id}/transactions/
     response_model=list[TransactionsListResponse]
 )
 def get_transactions(
@@ -57,7 +57,7 @@ def get_transactions(
         )
     
 @router.get(
-    "/{transaction_id}", # Rota: GET /users/{id}/transactions/{id}
+    "/{transaction_id}", # Rota: GET /{id}/transactions/{id}
     response_model=TransactionRegisterResponse
 )
 def get_transaction(
@@ -76,7 +76,7 @@ def get_transaction(
 
 # --- ROTA 4: PUT (Editar) ---
 @router.put(
-    "/{transaction_id}", # Rota: PUT /users/{id}/transactions/{id}
+    "/{transaction_id}", # Rota: PUT /{id}/transactions/{id}
     response_model=TransactionRegisterResponse
 )
 def update_transaction(
@@ -99,7 +99,7 @@ def update_transaction(
 
 # --- ROTA 5: DELETE (Excluir) ---
 @router.delete(
-    "/{transaction_id}", # Rota: DELETE /users/{id}/transactions/{id}
+    "/{transaction_id}", # Rota: DELETE /{id}/transactions/{id}
     response_model=Dict[str, str]
 )
 def delete_transaction(
