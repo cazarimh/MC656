@@ -208,7 +208,7 @@ def validate_unique_email(db, email: str):
     Levanta:
     HTTPException: se o email já estiver cadastrado
     '''
-    from ..database.users import get_user_by_email
+    from database.users import get_user_by_email
     
     user = get_user_by_email(db, email)
     if (user):

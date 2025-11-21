@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from datetime import datetime as dt
-from .models import Transaction
-from .schemas import TransactionCreate
+from database.models import Transaction
+from database.schemas import TransactionCreate
 
 def create_transaction_db(db: Session, user_id: int, transaction: TransactionCreate):
     new_transaction = Transaction(user_id=user_id,

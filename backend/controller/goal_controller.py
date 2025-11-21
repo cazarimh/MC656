@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict
 
-from backend.services import goal_service
-from backend.database.config import get_db
+from services import goal_service
+from database.config import get_db
 
-from backend.database.schemas import GoalCreate
-from backend.dto.goals_dto import (
+from database.schemas import GoalCreate
+from dto.goals_dto import (
     GoalRegisterResponse, 
     GoalsListResponse
 )

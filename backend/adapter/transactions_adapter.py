@@ -13,7 +13,7 @@ load_dotenv()
 class TransactionAdapter:
     def __init__(self, db: Session | None = None) -> None:
         self.db = db
-        self.data_source = os.getenv("DATA_SOURCE").lower()
+        self.data_source = (os.getenv("DATA_SOURCE")).lower()
         self.json_path = "./database/transactions.json"
 
     def __fetch_json_data(self, user_id: int):

@@ -2,14 +2,14 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 
-from backend.database import goals as crud_goals
-from backend.database import users as crud_user
-from backend.database.schemas import GoalCreate
+from database import goals as crud_goals
+from database import users as crud_user
+from database.schemas import GoalCreate
 
-from backend.dto.goals_dto import GoalRegisterResponse, GoalsListResponse
-from backend.adapter.goals_adapter import GoalAdapter
+from dto.goals_dto import GoalRegisterResponse, GoalsListResponse
+from mapper.goals_mapper import GoalMapper
 
-from backend.utils.validators import FieldValidator as val
+from utils.validators import FieldValidator as val
 
 
 def create_new_goal(
@@ -26,6 +26,10 @@ def create_new_goal(
             detail="Usuário não cadastrado.",
         )
 
+    goal = crud_goals.get_goal_by_category(db, goal_data.category)
+    if goal:
+        return update_specific_goal(user_id, goal.goal_id, goal_data, db)
+
     # Validações
     val.validate_type(goal_data.type)
 
@@ -39,7 +43,7 @@ def create_new_goal(
     )
     
     # Converte para o DTO de resposta
-    return GoalAdapter.to_response(goal_model)
+    return GoalMapper.to_response(goal_model)
 
 def get_goals_by_user(
     user_id: int, 
@@ -58,7 +62,7 @@ def get_goals_by_user(
     goals_list = crud_goals.get_goal_by_user(db, user.user_id)
     
     # Converte para a lista de DTOs de resposta
-    return GoalAdapter.to_list_response(goals_list)
+    return GoalMapper.to_list_response(goals_list)
 
 def _get_goal_and_verify_user(
     db: Session, user_id: int, goal_id: int
@@ -104,7 +108,7 @@ def get_specific_goal(
     )
     
     # Converte para DTO e retorna
-    return GoalAdapter.to_response(goal_model)
+    return GoalMapper.to_response(goal_model)
 
 # --- FUNÇÃO 3: PUT (Editar) ---
 def update_specific_goal(
@@ -137,7 +141,7 @@ def update_specific_goal(
     )
     
     # Converte para DTO e retorna
-    return GoalAdapter.to_response(updated_goal_model)
+    return GoalMapper.to_response(updated_goal_model)
 
 # --- FUNÇÃO 4: DELETE (Excluir) ---
 def delete_specific_goal(
