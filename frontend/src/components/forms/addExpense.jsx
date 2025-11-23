@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { MinusCircle, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./addExpense.css";
+import { createTransaction } from "../../api/transactionsApi";
 
 export default function AddExpense() {
   const navigate = useNavigate();
@@ -18,10 +19,31 @@ export default function AddExpense() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Nova Despesa:", formData);
-    alert("Despesa adicionada com sucesso!");
+
+    try {
+      const user_id = localStorage.getItem("user_id");
+      if (!user_id) {
+        alert("Usuário não autenticado!");
+        return;
+      }
+
+      const payload = {
+        type: "expense", // IMPORTANTE
+        value: Number(formData.value),
+        category: formData.category,
+        date: formData.date,
+        description: formData.description || "",
+      };
+
+      await createTransaction(user_id, payload);
+
+      alert("Despesa adicionada!");
+      navigate("/home");
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   return (

@@ -11,10 +11,12 @@ export async function registerUser(userData) {
     console.log("response:", error.response);
     console.log("data:", error.response?.data);
 
+    // Se o backend mandou "detail", retornamos ele
     if (error.response && error.response.data && error.response.data.detail) {
       throw new Error(error.response.data.detail);
     }
 
+    // fallback
     throw new Error("Erro ao registrar usuário");
   }
 }

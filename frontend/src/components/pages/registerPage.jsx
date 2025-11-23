@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./registerPage.css";
+import { registerUser } from "../../api/userApi";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -11,10 +12,30 @@ export default function RegisterPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Usuário ${form.name} cadastrado com sucesso!`);
-    navigate("/");
+
+    try {
+      const result = await registerUser({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
+
+      alert(`Usuário ${result.user.email} cadastrado com sucesso!`);
+
+      navigate("/");
+    } catch (error) {
+      console.error("Erro ao cadastrar usuário:", error);
+
+      const backendMessage =
+        error?.response?.data?.detail ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Erro ao cadastrar usuário. Tente novamente.";
+
+      alert(backendMessage);
+    }
   };
 
   return (

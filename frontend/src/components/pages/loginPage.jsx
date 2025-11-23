@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
+import { loginUser } from "../../api/userApi";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -11,15 +12,30 @@ export default function LoginPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Por enquanto são dados fictícios apenas para teste
-    if (form.email === "teste@teste.com" && form.password === "123456") {
+    try {
+      const result = await loginUser({
+        email: form.email,
+        password: form.password,
+      });
+
+      // salva o user_id vindo do backend
+      localStorage.setItem("user_id", result.user_id);
+
       alert("Login bem-sucedido!");
       navigate("/home");
-    } else {
-      alert("Credenciais inválidas!");
+    } catch (error) {
+      console.error("Erro no login:", error);
+
+      const backendMessage =
+        error?.response?.data?.detail ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Credenciais inválidas!";
+
+      alert(backendMessage);
     }
   };
 

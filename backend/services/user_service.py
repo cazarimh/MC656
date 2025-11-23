@@ -6,6 +6,8 @@ from database.schemas import UserCreate
 from dto.user_dto import UserLogin, UserRegisterResponse, UserResponse
 from mapper.user_mapper import UserMapper
 from utils.password_hash import get_password_hash, verify_password
+from utils.validators import validate_email_format, validate_unique_email, PasswordValidator
+
 
 def create_new_user(user_data: UserCreate, db: Session) -> UserRegisterResponse:
     # Verificar se o email já existe
@@ -15,7 +17,10 @@ def create_new_user(user_data: UserCreate, db: Session) -> UserRegisterResponse:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já registrado"
         )
-        
+
+    validate_email_format(user_data.email)
+    PasswordValidator.validate_password_strength(user_data.password)
+
     # Hashear a senha ANTES de salvar
     hashed_password = get_password_hash(user_data.password)
     
@@ -30,6 +35,7 @@ def create_new_user(user_data: UserCreate, db: Session) -> UserRegisterResponse:
     
     return UserMapper.to_register_response(new_user, "Success")
 
+
 def authenticate_user(user_data: UserLogin, db: Session):
     # Busca o usuário pelo email
     db_user = crud_user.get_user_by_email(db, user_email=user_data.email)
@@ -38,18 +44,19 @@ def authenticate_user(user_data: UserLogin, db: Session):
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="Usuário Não Encontrado"
         )
         
     # Verifica se a senha está correta
     if not verify_password(user_data.password, db_user.user_hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect password"
+            detail="Senha Incorreta"
         )
         
     # Retorna o objeto do usuário se tudo estiver OK
     return db_user
+
 
 # --- FUNÇÃO PARA OBTER DADOS DO USUÁRIO ---
 def get_user_info(user_id: int, db: Session) -> UserResponse:
