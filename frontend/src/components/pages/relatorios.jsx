@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -13,8 +14,8 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import axios from "axios";
 
-const COLORS = ["#16A34A", "#DC2626"];
 const PIE_COLORS = [
   "#16A34A",
   "#DC2626",
@@ -22,40 +23,43 @@ const PIE_COLORS = [
   "#FACC15",
   "#0EA5E9",
   "#A855F7",
-  "#94A3B8", // tom mais escuro para “Outros”
+  "#94A3B8",
 ];
 
 export default function Relatorios() {
-  const dadosMensais = [
-    { mes: "Jan", receita: 5300, despesa: 4200 },
-    { mes: "Fev", receita: 4800, despesa: 3900 },
-    { mes: "Mar", receita: 5500, despesa: 4100 },
-    { mes: "Abr", receita: 6000, despesa: 4500 },
-    { mes: "Mai", receita: 5800, despesa: 4700 },
-    { mes: "Jun", receita: 6100, despesa: 4900 },
-    { mes: "Jul", receita: 6400, despesa: 5000 },
-    { mes: "Ago", receita: 6300, despesa: 5200 },
-    { mes: "Set", receita: 6700, despesa: 5300 },
-    { mes: "Out", receita: 7000, despesa: 5500 },
-    { mes: "Nov", receita: 6800, despesa: 5400 },
-    { mes: "Dez", receita: 7200, despesa: 5600 },
-  ];
+  const [dadosMensais, setDadosMensais] = useState([]);
+  const [despesasCategorias, setDespesasCategorias] = useState([]);
+  const [receitasFixas, setReceitasFixas] = useState([]);
 
-  const despesasCategorias = [
-    { name: "Moradia", value: 1800 },
-    { name: "Alimentação", value: 1000 },
-    { name: "Transporte", value: 800 },
-    { name: "Lazer", value: 600 },
-    { name: "Saúde", value: 400 },
-    { name: "Outros", value: 300 },
-  ];
+  useEffect(() => {
+    async function carregarDados() {
+      try {
+        const USER_ID = localStorage.getItem("user_id");
+        if (!USER_ID) {
+          console.error("Usuário não logado!");
+          return;
+        }
 
-  const receitasFixas = [
-    { name: "Salário", value: 4500 },
-    { name: "Freelance", value: 1200 },
-    { name: "Investimentos", value: 800 },
-    { name: "Outros", value: 500 },
-  ];
+        const monthly = await axios.get(
+          `http://localhost:8000/${USER_ID}/reports/monthly`
+        );
+        const expenses = await axios.get(
+          `http://localhost:8000/${USER_ID}/reports/expenses`
+        );
+        const income = await axios.get(
+          `http://localhost:8000/${USER_ID}/reports/income`
+        );
+
+        setDadosMensais(monthly.data);
+        setDespesasCategorias(expenses.data);
+        setReceitasFixas(income.data);
+      } catch (err) {
+        console.error("Erro ao carregar relatórios:", err);
+      }
+    }
+
+    carregarDados();
+  }, []);
 
   const comparativo = dadosMensais.map((d) => ({
     mes: d.mes,
