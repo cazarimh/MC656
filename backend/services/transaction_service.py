@@ -112,10 +112,12 @@ def get_specific_transaction(
     adapter = TransactionAdapter(db)
     transactions_list = adapter.get_transactions(user_id)
 
-    transactions = TransactionMapper.to_list_response(transactions_list)
-    for t in transactions:
-        if t.transaction_id == transaction_id:
-            return t
+    for t in transactions_list:
+        if isinstance(t, dict) and t.get("transaction_id") == transaction_id:
+            return TransactionMapper.to_response(t)
+        if hasattr(t, "transaction_id") and t.transaction_id == transaction_id:
+            return TransactionMapper.to_response(t)
+
     
     raise HTTPException(status_code=404, detail="Transação Não Encontrada.")
 

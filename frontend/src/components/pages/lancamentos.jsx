@@ -12,47 +12,44 @@ export default function Lancamentos() {
   const [editData, setEditData] = useState({});
 
   useEffect(() => {
-    const fakeData = [
-      {
-        id: 1,
-        tipo: "receita",
-        subtipo: "Salário",
-        valor: 5000,
-        data: "2025-10-30",
-      },
-      {
-        id: 2,
-        tipo: "despesa",
-        subtipo: "Alimentação",
-        valor: 200,
-        data: "2025-10-31",
-      },
-      {
-        id: 3,
-        tipo: "despesa",
-        subtipo: "Transporte",
-        valor: 150,
-        data: "2025-11-01",
-      },
-      {
-        id: 4,
-        tipo: "receita",
-        subtipo: "Freelance",
-        valor: 800,
-        data: "2025-11-01",
-      },
-      {
-        id: 5,
-        tipo: "despesa",
-        subtipo: "Lazer",
-        valor: 200,
-        data: "2025-07-09",
-      },
-    ];
+    async function loadTransactions() {
+      try {
+        const userId = localStorage.getItem("user_id") || 1;
 
-    const sorted = fakeData.sort((a, b) => new Date(b.data) - new Date(a.data));
-    setTransactions(sorted);
-    setFiltered(sorted);
+        const response = await fetch(
+          `http://localhost:8000/${userId}/transactions/`
+        );
+        if (!response.ok) throw new Error("Erro ao buscar transações");
+
+        const data = await response.json();
+
+        console.log("RAW DATA:", data);
+
+        // transforma e garante que nada vire undefined
+        const mapped = data.map((t) => ({
+          id: t.id ?? t.transaction_id,
+          tipo: (t.type ?? t.transaction_type)?.toLowerCase(), // receita / despesa
+          subtipo: t.category ?? t.transaction_category,
+          valor: t.value ?? t.transaction_value,
+          data: t.created_at ?? t.transaction_date,
+          description: t.description ?? t.transaction_description,
+        }));
+
+        const sorted = mapped.sort((a, b) => {
+          if (!a.data) return 1;
+          if (!b.data) return -1;
+          return new Date(b.data) - new Date(a.data);
+        });
+
+        setTransactions(sorted);
+        setFiltered(sorted);
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao carregar lançamentos");
+      }
+    }
+
+    loadTransactions();
   }, []);
 
   useEffect(() => {
@@ -63,11 +60,14 @@ export default function Lancamentos() {
     if (filterSubType)
       result = result.filter((t) => t.subtipo === filterSubType);
 
-    result.sort((a, b) =>
-      sortOrder === "asc"
+    result.sort((a, b) => {
+      if (!a.data) return 1;
+      if (!b.data) return -1;
+
+      return sortOrder === "asc"
         ? new Date(a.data) - new Date(b.data)
-        : new Date(b.data) - new Date(a.data)
-    );
+        : new Date(b.data) - new Date(a.data);
+    });
 
     setFiltered(result);
   }, [filterType, filterSubType, sortOrder, transactions]);
@@ -75,9 +75,26 @@ export default function Lancamentos() {
   const toggleSort = () =>
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
 
-  const handleDelete = (id) => {
-    if (window.confirm("Tem certeza que deseja excluir este lançamento?")) {
+  const handleDelete = async (id) => {
+    if (!window.confirm("Tem certeza que deseja excluir este lançamento?"))
+      return;
+
+    try {
+      const userId = localStorage.getItem("user_id") || 1;
+
+      const response = await fetch(
+        `http://localhost:8000/${userId}/transactions/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Erro ao excluir");
+
       setTransactions(transactions.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao excluir lançamento");
     }
   };
 
@@ -99,15 +116,50 @@ export default function Lancamentos() {
     }
   };
 
-  const handleSave = () => {
-    const adjustedDate = editData.data;
-    setTransactions(
-      transactions.map((t) =>
-        t.id === editing ? { ...editData, data: adjustedDate, id: editing } : t
-      )
-    );
-    setEditing(null);
-    setEditData({});
+  const handleSave = async () => {
+    try {
+      const userId = localStorage.getItem("user_id") || 1;
+
+      const body = {
+        date: editData.data,
+        value: editData.valor,
+        type: editData.tipo.charAt(0).toUpperCase() + editData.tipo.slice(1),
+        category: editData.subtipo,
+        description: editData.description || "Atualização",
+      };
+
+      const response = await fetch(
+        `http://localhost:8000/${userId}/transactions/${editing}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      );
+
+      if (!response.ok) throw new Error("Erro ao atualizar lançamento");
+
+      const updated = await response.json();
+
+      const formatted = {
+        id: updated.transaction_id,
+        tipo: updated.transaction_type,
+        subtipo: updated.transaction_category,
+        valor: updated.transaction_value,
+        data: updated.transaction_date,
+      };
+
+      setTransactions(
+        transactions.map((t) => (t.id === editing ? formatted : t))
+      );
+
+      setEditing(null);
+      setEditData({});
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao salvar alterações");
+    }
+    window.location.reload();
   };
 
   const handleCancel = () => {
@@ -115,7 +167,6 @@ export default function Lancamentos() {
     setEditData({});
   };
 
-  // Tipos fixos
   const tiposFixos = {
     receita: ["Salário", "Freelance", "Investimentos", "Outros"],
     despesa: [
@@ -134,6 +185,10 @@ export default function Lancamentos() {
   const expenseTypes = tiposFixos.despesa;
 
   const formatDateDisplay = (dateStr) => {
+    if (!dateStr || typeof dateStr !== "string" || !dateStr.includes("-")) {
+      return "Data inválida";
+    }
+
     const [year, month, day] = dateStr.split("-");
     return `${day}/${month}/${year}`;
   };

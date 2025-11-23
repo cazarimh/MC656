@@ -5,7 +5,11 @@ from dto.user_dto import UserRegisterResponse, UserResponse
 class UserMapper:
     @staticmethod
     def to_response(user: User) -> UserResponse:
-        return UserResponse(id=user.user_id, email=user.user_email)
+        return UserResponse(
+            id=user.user_id,
+            email=user.user_email,
+            name=user.user_name
+        )
 
     @staticmethod
     def to_register_response(user: User, message: str) -> UserRegisterResponse:

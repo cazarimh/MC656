@@ -39,13 +39,3 @@ class UserCreate(BaseModel):
     name: str
     email: str
     password: str
-
-class UserResponse(BaseModel):
-    user_id: int
-    user_name: str
-    user_email: str
-    user_hashed_password: str
-    user_transactions: list[TransactionResponse] = []
-
-    class Config:
-        orm_mode = True

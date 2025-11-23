@@ -1,8 +1,8 @@
 import json
 import os
+from datetime import date, datetime
 
 from fastapi import HTTPException, status
-from sqlalchemy import Transaction
 from sqlalchemy.orm import Session
 
 from database import transactions as crud_transactions
@@ -16,6 +16,7 @@ class TransactionAdapter:
         self.data_source = (os.getenv("DATA_SOURCE")).lower()
         self.json_path = "./database/transactions.json"
 
+
     def __fetch_json_data(self, user_id: int):
         try:
             with open(self.json_path, "r", encoding="utf-8") as f:
@@ -28,9 +29,19 @@ class TransactionAdapter:
 
         user_transactions = [t for t in data if t.get("user_id") == user_id]
 
-        return user_transactions
+        for t in user_transactions:
+            if isinstance(t.get("transaction_date"), str):
+                try:
+                    t["transaction_date"] = date.fromisoformat(t["transaction_date"])
+                except ValueError:
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Data inválida no JSON: {t['transaction_date']}",
+                    )
 
-    def __fetch_db_data(self, user_id: int) -> list[Transaction]:
+        return user_transactions
+    
+    def __fetch_db_data(self, user_id: int):
         if not self.db:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -39,7 +50,7 @@ class TransactionAdapter:
 
         return crud_transactions.get_transaction_by_user(self.db, user_id)
 
-    def get_transactions(self, user_id: int) -> list[Transaction]:
+    def get_transactions(self, user_id: int):
         if self.data_source == "db":
             return self.__fetch_db_data(user_id)
         elif self.data_source == "json":
