@@ -16,8 +16,12 @@ def create_goal_db(db: Session, user_id: int, goal: GoalCreate):
 def get_goal_by_id(db: Session, goal_id: int):
     return db.query(Goal).filter(Goal.goal_id == goal_id).first()
 
-def get_goal_by_category(db: Session, goal_category: str):
-    return db.query(Goal).filter(Goal.goal_category == goal_category).first()
+def get_goal_by_category(db: Session, user_id: int, goal_category: str):
+    return (
+        db.query(Goal)
+        .filter(Goal.user_id == user_id, Goal.goal_category == goal_category)
+        .first()
+    )
 
 def get_goal_by_user(db: Session, user_id: int):
     return db.query(Goal).filter(Goal.user_id == user_id).all()

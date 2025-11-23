@@ -1,27 +1,29 @@
-from database.models import Goal
-from dto.goals_dto import GoalRegisterResponse, GoalsListResponse
-
+from utils.goals_utils import compute_current_value
 
 class GoalMapper:
-    @staticmethod
-    def to_response(goal: Goal) -> GoalRegisterResponse:
-        return GoalRegisterResponse(
-            goal_id=goal.goal_id,
-            goal_value=goal.goal_value,
-            goal_type=goal.goal_type,
-            goal_category=goal.goal_category,
-        )
 
     @staticmethod
-    def to_list_response(
-        goals: list[Goal],
-    ) -> list[GoalsListResponse]:
-        return [
-            GoalsListResponse(
-                goal_id=g.goal_id,
-                goal_value=g.goal_value,
-                goal_type=g.goal_type,
-                goal_category=g.goal_category,
+    def to_response(goal_model, db=None):
+        response = {
+            "user_id": goal_model.user_id,
+            "goal_id": goal_model.goal_id,
+            "goal_value": goal_model.goal_value,
+            "goal_type": goal_model.goal_type,
+            "goal_category": goal_model.goal_category,
+        }
+
+        if db:
+            response["current_value"] = compute_current_value(
+                db=db,
+                user_id=goal_model.user_id,
+                goal_model=goal_model
             )
-            for g in goals
+
+        return response
+
+    @staticmethod
+    def to_list_response(goals_list, db=None):
+        return [
+            GoalMapper.to_response(goal, db=db)
+            for goal in goals_list
         ]

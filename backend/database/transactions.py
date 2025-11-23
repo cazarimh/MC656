@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime as dt
 from database.models import Transaction
 from database.schemas import TransactionCreate
+from sqlalchemy import func
 
 def create_transaction_db(db: Session, user_id: int, transaction: TransactionCreate):
     new_transaction = Transaction(user_id=user_id,
@@ -14,6 +15,18 @@ def create_transaction_db(db: Session, user_id: int, transaction: TransactionCre
     db.commit()
     db.refresh(new_transaction)
     return new_transaction
+
+def get_total_by_category(db: Session, user_id: int, category: str, type: str):
+    total = (
+        db.query(func.sum(Transaction.transaction_value))
+        .filter(
+            Transaction.user_id == user_id,
+            Transaction.transaction_category == category,
+            Transaction.transaction_type == type
+        )
+        .scalar()
+    )
+    return total or 0
 
 def get_transaction_by_id(db: Session, transaction_id: int):
     return db.query(Transaction).filter(Transaction.transaction_id == transaction_id).first()
@@ -43,3 +56,5 @@ def delete_transaction(db: Session, transaction_id: int):
     if (transaction):
         db.delete(transaction)
         db.commit()
+
+    
