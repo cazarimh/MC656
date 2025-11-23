@@ -30,7 +30,7 @@ export default function AddIncome() {
       }
 
       const payload = {
-        type: "income",
+        type: "Receita",
         value: Number(formData.value),
         category: formData.category,
         date: formData.date,
@@ -91,11 +91,11 @@ export default function AddIncome() {
               onChange={handleChange}
               required
             >
-              <option value="">Selecione uma categoria</option>
-              <option value="salario">Salário</option>
-              <option value="freelance">Freelance</option>
-              <option value="investimentos">Investimentos</option>
-              <option value="outros">Outros</option>
+              <option value="">Selecione...</option>
+              <option value="Salário">Salário</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Investimentos">Investimentos</option>
+              <option value="Outros">Outros</option>
             </select>
           </div>
 

@@ -7,7 +7,7 @@ const api = axios.create({
 // Criar nova transação
 export async function createTransaction(userId, data) {
   try {
-    const response = await api.post(`/users/${userId}/transactions`, data);
+    const response = await api.post(`/${userId}/transactions`, data);
     return response.data;
   } catch (err) {
     const backendMsg =

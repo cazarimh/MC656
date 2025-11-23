@@ -30,7 +30,7 @@ export default function AddExpense() {
       }
 
       const payload = {
-        type: "expense", // IMPORTANTE
+        type: "Despesa",
         value: Number(formData.value),
         category: formData.category,
         date: formData.date,
@@ -92,14 +92,14 @@ export default function AddExpense() {
               required
             >
               <option value="">Selecione uma categoria</option>
-              <option value="moradia">Moradia</option>
-              <option value="alimentacao">Alimentação</option>
-              <option value="transporte">Transporte</option>
-              <option value="entretenimento">Entretenimento</option>
-              <option value="utilidades">Utilidades</option>
-              <option value="saude">Saúde</option>
-              <option value="educacao">Educação</option>
-              <option value="outros">Outros</option>
+              <option value="Moradia">Moradia</option>
+              <option value="Alimentação">Alimentação</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Entretenimento">Entretenimento</option>
+              <option value="Utilidades">Utilidades</option>
+              <option value="Saúde">Saúde</option>
+              <option value="Educação">Educação</option>
+              <option value="Outros">Outros</option>
             </select>
           </div>
 

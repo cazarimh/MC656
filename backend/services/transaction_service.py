@@ -76,21 +76,21 @@ def _get_transaction_and_verify_user(db: Session, user_id: int, transaction_id: 
     user = crud_user.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Uusário não encontrado"
         )
 
     # 2. Busca a transação
     transaction = crud_transactions.get_transaction_by_id(db, transaction_id)
     if not transaction:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Transação não encontrada"
         )
 
     # 3. VERIFICAÇÃO DE SEGURANÇA CRUCIAL
     if transaction.user_id != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this transaction",
+            detail="Usuário não altorizado para executar essa ação",
         )
 
     return transaction
