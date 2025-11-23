@@ -1,6 +1,8 @@
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 # from sqlalchemy.orm import Session
+from database.config import Base, engine
+from database import models
 
 from controller import goal_controller
 from controller import transaction_controller
@@ -36,6 +38,8 @@ from controller import user_controller
 #     validate_unique_email,
 # )
 
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
 origins = [
@@ -54,7 +58,7 @@ app.include_router(user_controller.router)
 app.include_router(transaction_controller.router)
 app.include_router(goal_controller.router)
 
-# models.Base.metadata.create_all(bind=engine)
+models.Base.metadata.create_all(bind=engine)
 
 # @app.post("/users", response_model=UserRegisterResponse, status_code=status.HTTP_201_CREATED)
 # def create_user(user_data: UserCreate, db: Session = Depends(get_db)):

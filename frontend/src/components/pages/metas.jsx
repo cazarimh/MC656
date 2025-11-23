@@ -12,17 +12,22 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
+
+import { getGoals, createGoal, updateGoal } from "../../api/goalsApi";
+
 import "./metas.css";
 
 export default function Metas() {
+  const userId = 1; // <-- ajuste se você usa auth
   const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const [form, setForm] = useState({
     tipo: "receita",
     subtipo: "",
     valorMeta: "",
   });
 
-  // Tipos fixos de receitas e despesas
   const tiposFixos = {
     receita: ["Salário", "Freelance", "Investimentos", "Outros"],
     despesa: [
@@ -37,62 +42,60 @@ export default function Metas() {
     ],
   };
 
+  async function loadGoals() {
+    try {
+      setLoading(true);
+      const data = await getGoals(userId);
+
+      const mapped = data.map((g) => ({
+        id: g.goal_id,
+        tipo: g.goal_type,
+        subtipo: g.goal_category,
+        valorMeta: g.goal_value,
+        valorAtual: 0, // depois integro com lançamentos
+      }));
+
+      setGoals(mapped);
+    } catch (err) {
+      console.error("Erro carregando metas:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    // Vamos puxar pela API do backend posteriormente
-    const fakeGoals = [
-      {
-        id: 1,
-        tipo: "receita",
-        subtipo: "Salário",
-        valorMeta: 5000,
-        valorAtual: 4200,
-      },
-      {
-        id: 2,
-        tipo: "despesa",
-        subtipo: "Alimentação",
-        valorMeta: 1000,
-        valorAtual: 800,
-      },
-      {
-        id: 3,
-        tipo: "despesa",
-        subtipo: "Transporte",
-        valorMeta: 600,
-        valorAtual: 450,
-      },
-    ];
-    setGoals(fakeGoals);
+    loadGoals();
   }, []);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Se já existe meta para o mesmo tipo/subtipo, atualiza
     const existing = goals.find(
       (g) => g.tipo === form.tipo && g.subtipo === form.subtipo
     );
 
-    if (existing) {
-      const updatedGoals = goals.map((g) =>
-        g.id === existing.id ? { ...g, valorMeta: Number(form.valorMeta) } : g
-      );
-      setGoals(updatedGoals);
-    } else {
-      const newGoal = {
-        id: Date.now(),
-        tipo: form.tipo,
-        subtipo: form.subtipo,
-        valorMeta: Number(form.valorMeta),
-        valorAtual: 0, // Por enquanto 0, será puxado das API futuramente
-      };
-      setGoals([...goals, newGoal]);
-    }
+    const payload = {
+      value: Number(form.valorMeta),
+      type: form.tipo,
+      category: form.subtipo,
+    };
 
-    setForm({ tipo: "receita", subtipo: "", valorMeta: "" });
+    try {
+      if (existing) {
+        await updateGoal(userId, existing.id, payload);
+      } else {
+        await createGoal(userId, payload);
+      }
+
+      await loadGoals(); // reinicializa tudo atualizado
+
+      setForm({ tipo: "receita", subtipo: "", valorMeta: "" });
+    } catch (err) {
+      console.error("Erro ao salvar meta:", err);
+    }
   };
 
   const totalByType = (tipo) =>
@@ -110,19 +113,19 @@ export default function Metas() {
 
   const receitasTotais = totalByType("receita");
   const despesasTotais = totalByType("despesa");
+
   const tiposReceita = goals.filter((g) => g.tipo === "receita");
   const tiposDespesa = goals.filter((g) => g.tipo === "despesa");
+
+  if (loading) return <p>Carregando...</p>;
 
   return (
     <div className="metas-page">
       <header className="metas-header">
-        <h1 style={{ color: "#1E293B" }}>Metas Financeiras</h1>
-        <p style={{ color: "#334155" }}>
-          Defina suas metas e acompanhe o progresso de receitas e despesas
-        </p>
+        <h1>Metas Financeiras</h1>
+        <p>Defina suas metas e acompanhe o progresso</p>
       </header>
 
-      {/* --- FORMULÁRIO --- */}
       <form className="goal-form" onSubmit={handleSubmit}>
         <select name="tipo" value={form.tipo} onChange={handleChange} required>
           <option value="receita">Receita</option>
@@ -135,10 +138,10 @@ export default function Metas() {
           onChange={handleChange}
           required
         >
-          <option value="">Selecione o tipo...</option>
-          {tiposFixos[form.tipo].map((tipo) => (
-            <option key={tipo} value={tipo}>
-              {tipo}
+          <option value="">Selecione...</option>
+          {tiposFixos[form.tipo].map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
             </option>
           ))}
         </select>
@@ -151,13 +154,13 @@ export default function Metas() {
           onChange={handleChange}
           required
         />
+
         <button type="submit">Salvar Meta</button>
       </form>
 
-      {/* --- GRÁFICOS GERAIS --- */}
       <div className="charts-section">
         <div className="chart-card">
-          <h3 style={{ color: "#1E293B" }}>Receitas (Geral)</h3>
+          <h3>Receitas (Geral)</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
@@ -186,7 +189,7 @@ export default function Metas() {
         </div>
 
         <div className="chart-card">
-          <h3 style={{ color: "#1E293B" }}>Despesas (Geral)</h3>
+          <h3>Despesas (Geral)</h3>
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
@@ -215,14 +218,13 @@ export default function Metas() {
         </div>
       </div>
 
-      {/* --- GRÁFICO DE BARRAS --- */}
       <div className="chart-bar-container">
-        <h3 style={{ color: "#1E293B" }}>Comparativo de Metas por Tipo</h3>
+        <h3>Comparativo de Metas por Tipo</h3>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={goals}>
             <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-            <XAxis dataKey="subtipo" stroke="#1E293B" />
-            <YAxis stroke="#1E293B" />
+            <XAxis dataKey="subtipo" />
+            <YAxis />
             <Tooltip />
             <Legend />
             <Bar dataKey="valorMeta" fill="#94A3B8" name="Meta" />
@@ -231,13 +233,12 @@ export default function Metas() {
         </ResponsiveContainer>
       </div>
 
-      {/* --- GRÁFICOS POR TIPO --- */}
       <div className="individual-charts">
-        <h3 style={{ color: "#1E293B" }}>Receitas por Tipo</h3>
+        <h3>Receitas por Tipo</h3>
         <div className="charts-grid">
           {tiposReceita.map((r, i) => (
             <div key={r.id} className="mini-chart-card">
-              <h4 style={{ color: "#334155" }}>{r.subtipo}</h4>
+              <h4>{r.subtipo}</h4>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
@@ -262,11 +263,11 @@ export default function Metas() {
           ))}
         </div>
 
-        <h3 style={{ color: "#1E293B" }}>Despesas por Tipo</h3>
+        <h3>Despesas por Tipo</h3>
         <div className="charts-grid">
           {tiposDespesa.map((d, i) => (
             <div key={d.id} className="mini-chart-card">
-              <h4 style={{ color: "#334155" }}>{d.subtipo}</h4>
+              <h4>{d.subtipo}</h4>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie
