@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext"; 
 import { LogOut } from "lucide-react";
 import {
   BarChart,
@@ -17,68 +18,98 @@ import PieChartCard from "../charts/pieChartCard";
 import "../pages/home.css";
 
 export default function Home() {
+
+  const getMonthRange = () => {
+    const date = new Date();
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    
+    const format = (d) => d.toISOString().split('T')[0];
+    return { start: format(firstDay), end: format(lastDay) };
+  };
+  
+  const [ dateRange, setDateRange ] = useState(getMonthRange());
+
+  const { user, logout } = useAuth();
+
   const [currentMonth] = useState(new Date());
   const navigate = useNavigate();
+  const [ loading, setLoading] = useState(true);
+  const [ financialData, setFinancialData ] = useState();
+  const [ goalsData, setGoalData ] = useState([]);
+  const [ allIncomeData, setAllIncomeData ] = useState([]);
+  const [ allExpenseData, setAllExpenseData ] = useState([]);
 
   const handleLogout = () => {
+    logout();
     navigate("/");
   };
 
-  const financialData = {
-    currentBalance: 12450.75,
-    totalIncome: 8500.0,
-    totalExpenses: 5234.25,
-  };
+  useEffect(() => {
+    if (!user || !user.id) {
+      navigate("/");
+      return;
+    }
+    
+    fetch(`http://localhost:8000/users/${user.id}/info/?start_date=${dateRange.start}&end_date=${dateRange.end}`,{
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Error fetching data");
+        return response.json();
+      })
+      .then((data) => {
+        setFinancialData(data.financialData);
+        setGoalData(data.generalGoals);
+        setAllIncomeData(data.incomeList);
+        setAllExpenseData(data.expenseList);
+      })
+      .catch((error) => console.error("Error fetching data: ", error))
+      .finally(() => setLoading(false));
+  }, []);
+  
+  if (loading) {
+    return <p>loading... </p>
+  }
 
-  const allIncomeData = [
-    { name: "Salário", value: 6500 },
-    { name: "Freelance", value: 1500 },
-    { name: "Investimentos", value: 500 },
-    { name: "Outros", value: 300 },
-  ];
+  const totalIncome = financialData.totalIncome;
+  const totalExpense = financialData.totalExpense;
 
-  const allExpenseData = [
-    { name: "Moradia", value: 2000 },
-    { name: "Alimentação", value: 800 },
-    { name: "Transporte", value: 450 },
-    { name: "Lazer", value: 600 },
-    { name: "Saúde", value: 300 },
-    { name: "Outros", value: 200 },
-  ];
-
-  // Top 3 receitas e despesas
   const incomeData = allIncomeData
-    .sort((a, b) => b.value - a.value)
+    .sort((a, b) => b.transaction_value - a.transaction_value)
     .slice(0, 3)
     .map((item, i) => ({
-      ...item,
+      name: item.transaction_category,
+      value: item.transaction_value,
       color: ["#15803D", "#16A34A", "#22C55E"][i],
-    }));
+  }));
 
   const expenseData = allExpenseData
-    .sort((a, b) => b.value - a.value)
+    .sort((a, b) => b.transaction_value - a.transaction_value)
     .slice(0, 3)
     .map((item, i) => ({
-      ...item,
+      name: item.transaction_category,
+      value: item.transaction_value,
       color: ["#991B1B", "#B91C1C", "#DC2626"][i],
-    }));
-
-  // Metas gerais
-  const metasData = [
-    {
-      categoria: "Receitas (Geral)",
-      atual: 8500,
-      meta: 10000,
-      tipo: "receita",
-    },
-    { categoria: "Despesas (Geral)", atual: 5234, meta: 6000, tipo: "despesa" },
-  ];
-
-  const metasFormatadas = metasData.map((m) => ({
-    categoria: m.categoria,
-    progresso: ((m.atual / m.meta) * 100).toFixed(1),
-    tipo: m.tipo,
   }));
+
+  const incomeGoals = goalsData.find(g => g.goal_type === "Receita");
+  const expenseGoals = goalsData.find(g => g.goal_type === "Despesa");
+  const formatedGoals = [
+    {
+      tipo: "Receita",
+      progresso: incomeGoals.goal_value > 0 ?
+        Math.min(100, (totalIncome / incomeGoals.goal_value)*100).toFixed(1)
+        : 0
+    },
+    {
+      tipo: "Despesa",
+      progresso: expenseGoals.goal_value > 0 ?
+        Math.min(100, (totalExpense / expenseGoals.goal_value)*100).toFixed(1)
+        : 0
+    }
+  ]
 
   return (
     <div className="dashboard">
@@ -109,13 +140,13 @@ export default function Home() {
         />
         <FinancialMetricCard
           title="Total Receitas"
-          amount={financialData.totalIncome}
+          amount={totalIncome}
           variant="income"
           onAddClick={() => navigate("/home/add-income")}
         />
         <FinancialMetricCard
           title="Total Despesas"
-          amount={financialData.totalExpenses}
+          amount={totalExpense}
           variant="expense"
           onAddClick={() => navigate("/home/add-expense")}
         />
@@ -125,12 +156,12 @@ export default function Home() {
         <PieChartCard
           title="Top 3 Receitas"
           data={incomeData}
-          total={financialData.totalIncome}
+          total={totalIncome}
         />
         <PieChartCard
           title="Top 3 Despesas"
           data={expenseData}
-          total={financialData.totalExpenses}
+          total={totalExpense}
         />
       </section>
 
@@ -148,7 +179,7 @@ export default function Home() {
         </h2>
         <ResponsiveContainer width="100%" height={250}>
           <BarChart
-            data={metasFormatadas}
+            data={formatedGoals}
             layout="vertical"
             margin={{ top: 10, right: 30, left: 50, bottom: 10 }}
           >
@@ -159,14 +190,14 @@ export default function Home() {
               tickFormatter={(v) => `${v}%`}
               stroke="#475569"
             />
-            <YAxis dataKey="categoria" type="category" stroke="#475569" />
+            <YAxis dataKey="tipo" type="category" stroke="#475569" />
             <Tooltip formatter={(v) => `${v}%`} />
             <Legend />
             <Bar dataKey="progresso" name="Progresso (%)">
-              {metasFormatadas.map((entry, index) => (
+              {formatedGoals.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={entry.tipo === "receita" ? "#16A34A" : "#DC2626"}
+                  fill={entry.tipo === "Receita" ? "#16A34A" : "#DC2626"}
                 />
               ))}
             </Bar>

@@ -1,12 +1,14 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-
+from datetime import date
 
 from database import goals as crud_goals
+from database import transactions as crud_transactions
 from database import users as crud_user
 from database.schemas import GoalCreate
 
 from dto.goals_dto import GoalRegisterResponse, GoalsListResponse
+from dto.info_dto import GoalInfoResponse
 from mapper.goals_mapper import GoalMapper
 
 from utils.validators import FieldValidator as val
@@ -63,6 +65,40 @@ def get_goals_by_user(
     
     # Converte para a lista de DTOs de resposta
     return GoalMapper.to_list_response(goals_list)
+
+def get_goals_progress_by_user(
+    user_id: int,
+    db: Session,
+    start_date: date | None = None,
+    end_date: date | None = None
+) -> list[GoalInfoResponse]:
+    
+    # Valida o usuário
+    user = crud_user.get_user_by_id(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Usuário com ID {user_id} não encontrado.",
+        )
+
+    goals_list = crud_goals.get_goal_by_user(db, user.user_id)
+    transactions_list = crud_transactions.get_transactiom_sum_by_category(db, user.user_id, start_date=start_date, end_date=end_date)
+    transactions_dict = {"Receita": {}, "Despesa": {}}
+    for typ, cat, val in transactions_list:
+        transactions_dict[typ][cat] = val
+
+    goals_info_list = []
+    for goal in goals_list:
+        progress = transactions_dict[goal.goal_type].get(goal.goal_category, 0)
+        goals_info_list.append(GoalInfoResponse(
+            goal_id=goal.goal_id,
+            goal_value=goal.goal_value,
+            goal_progress=progress,
+            goal_type=goal.goal_type,
+            goal_category=goal.goal_category
+        ))
+    
+    return goals_info_list
 
 def _get_goal_and_verify_user(
     db: Session, user_id: int, goal_id: int

@@ -18,3 +18,4 @@ class UserResponse(BaseModel):
 class UserRegisterResponse(BaseModel):
     message: str | None
     user: UserResponse
+

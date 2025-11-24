@@ -5,6 +5,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import Transaction
 from sqlalchemy.orm import Session
 
+from datetime import date
+
 from database import transactions as crud_transactions
 from dotenv import load_dotenv
 
@@ -30,18 +32,23 @@ class TransactionAdapter:
 
         return user_transactions
 
-    def __fetch_db_data(self, user_id: int) -> list[Transaction]:
+    def __fetch_db_data(self, user_id: int, transaction_type: str | None = None, transaction_category: str | None = None, start_date: date | None = None, end_date: date | None = None) -> list[Transaction]:
         if not self.db:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Sessão de banco de dados não fornecida.",
             )
 
-        return crud_transactions.get_transaction_by_user(self.db, user_id)
+        return crud_transactions.get_transactions_by_user(user_id=user_id,
+                                                          transaction_type=transaction_type,
+                                                          transaction_category=transaction_category,
+                                                          start_date=start_date,
+                                                          end_date=end_date,
+                                                          db=self.db)
 
-    def get_transactions(self, user_id: int) -> list[Transaction]:
+    def get_transactions(self, user_id: int, transaction_type: str | None = None, transaction_category: str | None = None, start_date: date | None = None, end_date: date | None = None) -> list[Transaction]:
         if self.data_source == "db":
-            return self.__fetch_db_data(user_id)
+            return self.__fetch_db_data(user_id, transaction_type, transaction_category, start_date, end_date)
         elif self.data_source == "json":
             return self.__fetch_json_data(user_id)
         else:

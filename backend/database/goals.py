@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from datetime import datetime as dt
 from database.models import Goal
 from database.schemas import GoalCreate
@@ -21,6 +22,22 @@ def get_goal_by_category(db: Session, goal_category: str):
 
 def get_goal_by_user(db: Session, user_id: int):
     return db.query(Goal).filter(Goal.user_id == user_id).all()
+
+def get_general_goals(db: Session, user_id: int):
+    general_goals = db.query(Goal.goal_type, func.sum(Goal.goal_value))\
+        .filter(Goal.user_id == user_id)\
+        .group_by(Goal.goal_type)\
+        .all()
+    
+    if (general_goals):
+        general_goals = dict(general_goals)
+        if ("Receita" not in general_goals):
+            general_goals["Receita"] = 0
+        if ("Despesa" not in general_goals):
+            general_goals["Despesa"] = 0
+        return general_goals
+    else:
+        return {"Receita": 0, "Despesa": 0}
 
 def update_goal(db: Session, goal_id: int, goal_new_data: GoalCreate):
     goal = get_goal_by_id(db, goal_id)
