@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from datetime import date
+
 from typing import Dict
 
 from services import goal_service
@@ -10,6 +12,7 @@ from dto.goals_dto import (
     GoalRegisterResponse, 
     GoalsListResponse
 )
+from dto.info_dto import GoalInfoResponse
 
 router = APIRouter(
     prefix="/{user_id}/goals",
@@ -55,7 +58,27 @@ def get_goals(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred: {str(e)}"
         )
-    
+
+@router.get(
+    "/info",
+    response_model=list[GoalInfoResponse]
+)
+def get_goals(
+    user_id: int,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    db: Session = Depends(get_db)
+):
+    try:
+        return goal_service.get_goals_progress_by_user(user_id=user_id, start_date=start_date, end_date=end_date, db=db)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+
 @router.get(
     "/{goal_id}",
     response_model=GoalRegisterResponse

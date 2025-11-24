@@ -12,8 +12,8 @@ from controller import user_controller
 # from mapper.user_mapper import UserMapper
 # from mapper.transactions_mapper import TransactionMapper
 
-# from database import models
-# from database.config import engine, get_db
+from database import models
+from database.config import engine, get_db
 # from database.schemas import (
 #     GoalCreate,
 #     TransactionCreate,
@@ -36,6 +36,8 @@ from controller import user_controller
 #     validate_unique_email,
 # )
 
+models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
 origins = [
@@ -54,43 +56,22 @@ app.include_router(user_controller.router)
 app.include_router(transaction_controller.router)
 app.include_router(goal_controller.router)
 
-# models.Base.metadata.create_all(bind=engine)
 
-# @app.post("/users", response_model=UserRegisterResponse, status_code=status.HTTP_201_CREATED)
-# def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
-#     """
-#     Criação de um novo usuário no sistema
+# """
+# Criação de um novo usuário no sistema
 
-#     Parâmetros:
-#     user_data (UserCreate): objeto contendo os dados do usuário, incluindo email e senha
+# Parâmetros:
+# user_data (UserCreate): objeto contendo os dados do usuário, incluindo email e senha
 
-#     Retorna:
-#     UserResponse: objeto contendo o ID, nome, email e senha encriptada do usuário cadastrado
+# Retorna:
+# UserResponse: objeto contendo o ID, nome, email e senha encriptada do usuário cadastrado
 
-#     Levanta:
-#     HTTPException:
-#         - 400 BAD REQUEST se o campo nome estiver vazio
-#         - 400 BAD REQUEST se o email já estiver cadastrado
-#         - 400 BAD REQUEST se o formato do email não for válido ou a senha não atender os critérios de segurança
-#     """
-
-#     if not user_data.name:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Insira um nome.",
-#         )
-
-#     validate_email_format(user_data.email)
-
-#     validate_unique_email(db, user_data.email)
-
-#     pv.validate_password_strength(user_data.password)
-
-#     user_data.password = get_password_hash(user_data.password)
-
-#     user = create_user_db(db, user_data)
-#     return UserMapper.to_register_response(user, "Success")
-
+# Levanta:
+# HTTPException:
+#     - 400 BAD REQUEST se o campo nome estiver vazio
+#     - 400 BAD REQUEST se o email já estiver cadastrado
+#     - 400 BAD REQUEST se o formato do email não for válido ou a senha não atender os critérios de segurança
+# """
 
 # @app.post("/{user_id}/transactions", response_model=TransactionRegisterResponse, status_code=status.HTTP_201_CREATED)
 # def create_transaction(user_id: int, transaction_create: TransactionCreate, db: Session = Depends(get_db)):

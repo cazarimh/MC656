@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { PlusCircle, ArrowLeft } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "./addIncome.css";
 
 export default function AddIncome() {
+  const { user } = useAuth(); 
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -18,10 +20,45 @@ export default function AddIncome() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Nova Receita:", formData);
-    alert("Receita adicionada com sucesso!");
+
+    if (!user || !user.id) {
+      navigate("/");
+      return;
+    }
+
+    const payload = {
+      date: formData.date,
+      value: formData.value,
+      type: "Receita",
+      category: formData.category,
+      description: formData.description
+    };
+
+    try {
+      console.log(payload.date);
+      const response = await fetch(`http://localhost:8000/${user.id}/transactions/`,{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+        if (response.status === 201) {
+          alert("Receita adicionada com sucesso!");
+
+          setFormData({
+            value: "",
+            category: "",
+            date: "",
+            description: ""
+          })
+        } else {
+          alert("Informações inválidas!");
+        }
+    } catch (error) {
+      alert("Ocorreu um erro inesperado, tente novamente mais tarde");
+    }
   };
 
   return (
@@ -70,10 +107,10 @@ export default function AddIncome() {
               required
             >
               <option value="">Selecione uma categoria</option>
-              <option value="salario">Salário</option>
-              <option value="freelance">Freelance</option>
-              <option value="investimentos">Investimentos</option>
-              <option value="outros">Outros</option>
+              <option value="Salário">Salário</option>
+              <option value="Freelance">Freelance</option>
+              <option value="Investimentos">Investimentos</option>
+              <option value="Outros">Outros</option>
             </select>
           </div>
 

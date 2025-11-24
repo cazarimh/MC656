@@ -14,7 +14,7 @@ class GoalResponse(BaseModel):
     goal_category: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class TransactionCreate(BaseModel):
     date: str
@@ -33,7 +33,7 @@ class TransactionResponse(BaseModel):
     transaction_description: str | None = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserCreate(BaseModel):
     name: str
@@ -48,4 +48,4 @@ class UserResponse(BaseModel):
     user_transactions: list[TransactionResponse] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True

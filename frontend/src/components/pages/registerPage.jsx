@@ -11,10 +11,32 @@ export default function RegisterPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Usuário ${form.name} cadastrado com sucesso!`);
-    navigate("/");
+
+    const payload = {
+      name: form.name,
+      email: form.email,
+      password: form.password
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/users/",{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+        });
+
+        if (response.status === 201) {
+          alert(`Usuário ${form.name} cadastrado com sucesso!`);
+          navigate("/");
+        } else {
+          let errorData = await response.json();
+          alert(errorData.detail)
+        }
+    } catch (error) {
+      alert("Ocorreu um erro inesperado, tente novamente mais tarde");
+    }
   };
 
   return (

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { MinusCircle, ArrowLeft } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "./addExpense.css";
 
 export default function AddExpense() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -18,12 +20,47 @@ export default function AddExpense() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Nova Despesa:", formData);
-    alert("Despesa adicionada com sucesso!");
-  };
 
+    if (!user || !user.id) {
+      navigate("/");
+      return;
+    }
+
+    const payload = {
+      date: formData.date,
+      value: formData.value,
+      type: "Despesa",
+      category: formData.category,
+      description: formData.description
+    };
+
+    try {
+      console.log(payload.date);
+      const response = await fetch(`http://localhost:8000/${user.id}/transactions/`,{ // TODO: adicionar user_id certo
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+        if (response.status === 201) {
+          alert("Despesa adicionada com sucesso!");
+
+          setFormData({
+            value: "",
+            category: "",
+            date: "",
+            description: ""
+          })
+        } else {
+          alert("Informações inválidas!");
+        }
+    } catch (error) {
+      alert("Ocorreu um erro inesperado, tente novamente mais tarde");
+    }
+  };
+  
   return (
     <div style={{ paddingLeft: "1rem" }}>
       <button className="back-button" onClick={() => navigate("/home")}>
@@ -70,14 +107,14 @@ export default function AddExpense() {
               required
             >
               <option value="">Selecione uma categoria</option>
-              <option value="moradia">Moradia</option>
-              <option value="alimentacao">Alimentação</option>
-              <option value="transporte">Transporte</option>
-              <option value="entretenimento">Entretenimento</option>
-              <option value="utilidades">Utilidades</option>
-              <option value="saude">Saúde</option>
-              <option value="educacao">Educação</option>
-              <option value="outros">Outros</option>
+              <option value="Moradia">Moradia</option>
+              <option value="Alimentação">Alimentação</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Entretenimento">Entretenimento</option>
+              <option value="Utilidades">Utilidades</option>
+              <option value="Saúde">Saúde</option>
+              <option value="Educação">Educação</option>
+              <option value="Outros">Outros</option>
             </select>
           </div>
 

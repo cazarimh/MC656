@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./loginPage.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
 
   const handleChange = (e) => {
@@ -11,15 +13,34 @@ export default function LoginPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Por enquanto são dados fictícios apenas para teste
-    if (form.email === "teste@teste.com" && form.password === "123456") {
-      alert("Login bem-sucedido!");
-      navigate("/home");
-    } else {
-      alert("Credenciais inválidas!");
+    const payload = {
+      email: form.email,
+      password: form.password
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/users/login",{
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+        });
+
+        if (response.status === 200) {
+          const data = await response.json();
+          const userData = { id: data.user_id };
+          console.log(data);
+
+          login(userData);
+          
+          navigate("/home");
+        } else {
+          alert("Credenciais inválidas!");
+        }
+    } catch (error) {
+      alert("Ocorreu um erro inesperado, tente novamente mais tarde");
     }
   };
 

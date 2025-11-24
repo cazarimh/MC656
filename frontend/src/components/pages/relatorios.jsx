@@ -1,3 +1,5 @@
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import {
   LineChart,
   Line,
@@ -14,7 +16,9 @@ import {
   Cell,
 } from "recharts";
 
-const COLORS = ["#16A34A", "#DC2626"];
+const COLORS_INCOME = "#16A34A";
+const COLORS_EXPENSE = "#DC2626";
+
 const PIE_COLORS = [
   "#16A34A",
   "#DC2626",
@@ -22,46 +26,81 @@ const PIE_COLORS = [
   "#FACC15",
   "#0EA5E9",
   "#A855F7",
-  "#94A3B8", // tom mais escuro para “Outros”
+  "#94A3B8",
 ];
 
 export default function Relatorios() {
-  const dadosMensais = [
-    { mes: "Jan", receita: 5300, despesa: 4200 },
-    { mes: "Fev", receita: 4800, despesa: 3900 },
-    { mes: "Mar", receita: 5500, despesa: 4100 },
-    { mes: "Abr", receita: 6000, despesa: 4500 },
-    { mes: "Mai", receita: 5800, despesa: 4700 },
-    { mes: "Jun", receita: 6100, despesa: 4900 },
-    { mes: "Jul", receita: 6400, despesa: 5000 },
-    { mes: "Ago", receita: 6300, despesa: 5200 },
-    { mes: "Set", receita: 6700, despesa: 5300 },
-    { mes: "Out", receita: 7000, despesa: 5500 },
-    { mes: "Nov", receita: 6800, despesa: 5400 },
-    { mes: "Dez", receita: 7200, despesa: 5600 },
-  ];
 
-  const despesasCategorias = [
-    { name: "Moradia", value: 1800 },
-    { name: "Alimentação", value: 1000 },
-    { name: "Transporte", value: 800 },
-    { name: "Lazer", value: 600 },
-    { name: "Saúde", value: 400 },
-    { name: "Outros", value: 300 },
-  ];
+  const getMonthRange = () => {
+        const date = new Date();
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const format = (d) => d.toISOString().split('T')[0];
+        return { start: format(firstDay), end: format(lastDay) };
+      };
+    
+  const [dateRange, setDateRange] = useState(getMonthRange());
 
-  const receitasFixas = [
-    { name: "Salário", value: 4500 },
-    { name: "Freelance", value: 1200 },
-    { name: "Investimentos", value: 800 },
-    { name: "Outros", value: 500 },
-  ];
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  
+  const [evolutionData, setEvolutionData] = useState([]);
+  const [pieIncomeData, setPieIncomeData] = useState([]);
+  const [pieExpenseData, setPieExpenseData] = useState([]);
 
-  const comparativo = dadosMensais.map((d) => ({
-    mes: d.mes,
-    receita: d.receita,
-    despesa: d.despesa,
-  }));
+  useEffect(() => {
+    const fetchDashboardInfo = async () => {
+      if (!user || !user.id) {
+        navigate("/");
+        return;
+      }
+      setLoading(true);
+      try {
+        const response = await fetch(`http://localhost:8000/${user.id}/transactions/info?start_date=${dateRange.start}&end_date=${dateRange.end}`);
+        
+        if (!response.ok) throw new Error("Erro ao buscar dados do dashboard");
+        
+        const data = await response.json();
+        
+        const evolutionMapped = data.lastYearTransactions.map(item => ({
+            mes: item.transaction_month,
+            receita: item.month_income,
+            despesa: item.month_expense
+        }));
+        setEvolutionData(evolutionMapped);
+
+        // --- 2. Processar Pizza Receitas ---
+        const incomeMapped = data.incomeList.map(item => ({
+            name: item.transaction_category,
+            value: item.transaction_value
+        }));
+        setPieIncomeData(incomeMapped);
+
+        // --- 3. Processar Pizza Despesas ---
+        const expenseMapped = data.expenseList.map(item => ({
+            name: item.transaction_category,
+            value: item.transaction_value
+        }));
+        setPieExpenseData(expenseMapped);
+
+      } catch (error) {
+        console.error("Erro:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardInfo();
+  }, []);
+
+  if (loading) {
+      return (
+        <div style={{ padding: "40px", textAlign: "center", minHeight: "100vh", backgroundColor: "#F1F5F9" }}>
+            <p style={{color: "#64748B"}}>Gerando relatórios...</p>
+        </div>
+      );
+  }
 
   return (
     <div
@@ -81,7 +120,7 @@ export default function Relatorios() {
         Acompanhe a evolução das suas receitas e despesas ao longo do tempo
       </p>
 
-      {/* Gráfico principal de linha */}
+      {/* --- GRÁFICO 1: LINHA (Evolução 12 meses) --- */}
       <div
         style={{
           backgroundColor: "#fff",
@@ -92,19 +131,19 @@ export default function Relatorios() {
         }}
       >
         <h2 style={{ color: "#1E293B", marginBottom: "20px" }}>
-          Evolução de Receitas e Despesas
+          Evolução de Receitas e Despesas (Últimos 12 Meses)
         </h2>
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={dadosMensais}>
+          <LineChart data={evolutionData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
             <XAxis dataKey="mes" stroke="#475569" />
             <YAxis stroke="#475569" />
-            <Tooltip />
+            <Tooltip formatter={(val) => `R$ ${val.toFixed(2)}`} />
             <Legend />
             <Line
               type="monotone"
               dataKey="receita"
-              stroke="#16A34A"
+              stroke={COLORS_INCOME}
               strokeWidth={3}
               dot={{ r: 5 }}
               activeDot={{ r: 7 }}
@@ -113,7 +152,7 @@ export default function Relatorios() {
             <Line
               type="monotone"
               dataKey="despesa"
-              stroke="#DC2626"
+              stroke={COLORS_EXPENSE}
               strokeWidth={3}
               dot={{ r: 5 }}
               activeDot={{ r: 7 }}
@@ -123,7 +162,7 @@ export default function Relatorios() {
         </ResponsiveContainer>
       </div>
 
-      {/* Gráfico de barras comparativo */}
+      {/* --- GRÁFICO 2: BARRAS (Comparativo 12 meses) --- */}
       <div
         style={{
           backgroundColor: "#fff",
@@ -134,22 +173,22 @@ export default function Relatorios() {
         }}
       >
         <h2 style={{ color: "#1E293B", marginBottom: "20px" }}>
-          Comparativo de Receitas e Despesas Mensais
+          Comparativo Mensal
         </h2>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={comparativo}>
+          <BarChart data={evolutionData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
             <XAxis dataKey="mes" stroke="#475569" />
             <YAxis stroke="#475569" />
-            <Tooltip />
+            <Tooltip formatter={(val) => `R$ ${val.toFixed(2)}`} />
             <Legend />
-            <Bar dataKey="receita" fill="#16A34A" name="Receita" />
-            <Bar dataKey="despesa" fill="#DC2626" name="Despesa" />
+            <Bar dataKey="receita" fill={COLORS_INCOME} name="Receita" />
+            <Bar dataKey="despesa" fill={COLORS_EXPENSE} name="Despesa" />
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Gráficos de pizza */}
+      {/* --- GRÁFICOS DE PIZZA (Por Categoria) --- */}
       <div
         style={{
           display: "flex",
@@ -158,7 +197,7 @@ export default function Relatorios() {
           flexWrap: "wrap",
         }}
       >
-        {/* Despesas */}
+        {/* Pizza: Despesas */}
         <div
           style={{
             backgroundColor: "#fff",
@@ -169,12 +208,13 @@ export default function Relatorios() {
           }}
         >
           <h2 style={{ color: "#1E293B", marginBottom: "20px" }}>
-            Distribuição de Despesas por Categoria
+            Despesas por Categoria
           </h2>
+          {pieExpenseData.length > 0 ? (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={despesasCategorias}
+                data={pieExpenseData}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -182,17 +222,20 @@ export default function Relatorios() {
                 outerRadius={120}
                 label
               >
-                {despesasCategorias.map((_, i) => (
+                {pieExpenseData.map((_, i) => (
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip formatter={(val) => `R$ ${val.toFixed(2)}`} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
+          ) : (
+             <p style={{padding: '50px', color: '#94a3b8'}}>Sem despesas registradas.</p>
+          )}
         </div>
 
-        {/* Receitas */}
+        {/* Pizza: Receitas */}
         <div
           style={{
             backgroundColor: "#fff",
@@ -203,12 +246,13 @@ export default function Relatorios() {
           }}
         >
           <h2 style={{ color: "#1E293B", marginBottom: "20px" }}>
-            Distribuição de Receitas Fixas
+            Receitas por Categoria
           </h2>
+          {pieIncomeData.length > 0 ? (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={receitasFixas}
+                data={pieIncomeData}
                 dataKey="value"
                 nameKey="name"
                 cx="50%"
@@ -216,14 +260,17 @@ export default function Relatorios() {
                 outerRadius={120}
                 label
               >
-                {receitasFixas.map((_, i) => (
+                {pieIncomeData.map((_, i) => (
                   <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip formatter={(val) => `R$ ${val.toFixed(2)}`} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
+           ) : (
+             <p style={{padding: '50px', color: '#94a3b8'}}>Sem receitas registradas.</p>
+          )}
         </div>
       </div>
     </div>
