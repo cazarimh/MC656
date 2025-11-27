@@ -32,4 +32,4 @@ jobs:
 
       - name: 4. Rodar Testes Automatizados (Etapa de Teste)
         run: |
-          pytest -vv
+          pytest -vv --log-cli-level=INFO
