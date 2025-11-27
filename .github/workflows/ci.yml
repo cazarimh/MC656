@@ -24,12 +24,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13.7"
+      
+      - name: 3. Acessar o diretório backend
+        run: |
+          cd backend
 
-      - name: 3. Instalar Dependências (Etapa de Build)
+      - name: 4. Instalar Dependências (Etapa de Build)
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+          pip install -r requirements.txt
 
-      - name: 4. Rodar Testes Automatizados (Etapa de Teste)
+      - name: 5. Rodar Testes Automatizados (Etapa de Teste)
         run: |
-          pytest
+          pytest -vv

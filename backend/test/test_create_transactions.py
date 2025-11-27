@@ -58,7 +58,7 @@ def test_unregistered_user(test_client, mock_user):
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 403
-    assert response.json() == {"detail": "Usuário não cadastrado. Cadastre-se antes de registrar um gasto."}
+    assert response.json() == {"detail": "Usuário não cadastrado."}
 
 ###################     TESTES DE CATEGORIA ###################
 
