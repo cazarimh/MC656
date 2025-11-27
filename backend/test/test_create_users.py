@@ -202,74 +202,84 @@ def test_tld_length(test_client):
     assert response.status_code == 400
     assert response.json() == {"detail": "O formato do email é inválido."}
 
-################### TESTES DE PASSWORD ###################
 
-def test_password_length(test_client):
+################### TESTES DE PASSWORD  ###################
+# Unidade: Validação de Comprimento de Senha (Comprimento >= 8) (critérios: Análise de Valor Limite (AVL) e Particionamento em Classes de Equivalência (PCE))
+
+# --- AVL: CASO VÁLIDO ---
+
+def test_password_avl_length_min_valido(test_client):
     '''
-    Testa se o sistema retorna um erro na criação de um
-    usuário com a senha possuindo menos de 8 caracteres
+    [AVL: Limite Válido] Testa a senha com o tamanho mínimo permitido (8 caracteres).
+    (Assume: 'A1b@cdef' cumpre as outras regras: maiúsc., minúsc., dígito, especial)
     '''
     response = test_client.post(
         "/users",
-        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "Ab1!L()"}
+        json={"name": "Fulano AVL", "email": "emailavlminvalido@gmail.com", "password": "A1b@cdef"} # 8 caracteres
+    )
+    assert response.status_code == 201
+    
+# --- AVL: CASO INVÁLIDO ---
+
+def test_password_avl_length_min_invalido(test_client):
+    '''
+    [AVL: Limite Inválido / PCE: Classe Inválida] Testa a senha com o tamanho mais próximo do mínimo que é inválido (7 caracteres).
+    '''
+    response = test_client.post(
+        "/users",
+        json={"name": "Fulano Invalido", "email": "emailinvalidolength@gmail.com", "password": "A1b@cde"} # 7 caracteres
     )
 
     # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A senha deve conter ao menos 8 caracteres."}
+    
+# --- PCE: CASOS INVÁLIDOS POR REGRAS ADICIONAIS ---
 
-def test_password_uppercase(test_client):
+def test_password_pce_sem_maiuscula(test_client):
     '''
-    Testa se o sistema retorna um erro na criação de um
-    usuário com a senha sem uma letra maiúscula
+    [PCE: Classe Inválida - Sem Maiúscula] Testa se a API retorna erro quando falta uma letra maiúscula.
     '''
     response = test_client.post(
         "/users",
-        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "test123!@"}
+        json={"name": "Fulano Testador", "email": "emailnomaiuscula@gmail.com", "password": "test123!@"}
     )
-
-    # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A senha deve conter ao menos uma letra maiúscula."}
-
-def test_password_lowercase(test_client):
+    
+def test_password_pce_sem_caractere_especial(test_client):
     '''
-    Testa se o sistema retorna um erro na criação de um
-    usuário com a senha sem uma letra minúscula
-    '''
-    response = test_client.post(
-        "/users",
-        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "TEST123!@"}
-    )
-
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "A senha deve conter ao menos uma letra minúscula."}
-
-def test_password_digit(test_client):
-    '''
-    Testa se o sistema retorna um erro na criação de um
-    usuário com a senha sem um dígito
+    [PCE: Classe Inválida - Sem Especial] Testa se a API retorna erro quando falta um caractere especial.
     '''
     response = test_client.post(
         "/users",
-        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "TEST!@test"}
+        json={"name": "Fulano Testador", "email": "emailnoespecial@gmail.com", "password": "TEST123test"}
     )
-
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "A senha deve conter ao menos um dígito."}
-
-def test_password_special_character(test_client):
-    '''
-    Testa se o sistema retorna um erro na criação de um
-    usuário com a senha sem um caractere especial
-    '''
-    response = test_client.post(
-        "/users",
-        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "TEST123test"}
-    )
-
-    # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A senha deve conter pelo menos um caractere especial."}
+
+def test_duplicate_email(test_client):
+    '''
+    Testa se o sistema retorna um erro na criação de um usuário com email já cadastrado
+    '''
+    test_client.post(
+        "/users",
+        json={"name": "Fulano Testador", "email": "emailteste@gmail.com", "password": "Senha@Forte123"}
+    )
+    response = test_client.post(
+        "/users",
+        json={"name": "Ciclano Testador", "email": "emailteste@gmail.com", "password": "OutraSenha123@"}
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Este email já está cadastrado."}
+
+def test_empty_name(test_client):
+    '''
+    Testa se o sistema retorna um erro na criação de um usuário sem nome
+    '''
+    response = test_client.post(
+        "/users",
+        json={"name": "", "email": "emailvaziodenome@gmail.com", "password": "Senha@Forte123"}
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Insira um nome."}

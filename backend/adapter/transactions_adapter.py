@@ -15,8 +15,12 @@ load_dotenv()
 class TransactionAdapter:
     def __init__(self, db: Session | None = None) -> None:
         self.db = db
-        self.data_source = (os.getenv("DATA_SOURCE")).lower()
-        self.json_path = "./database/transactions.json"
+        ds = os.getenv("DATA_SOURCE")
+        if not ds:
+            self.data_source = "db"
+        else:
+            self.data_source = ds.lower()
+            self.json_path = "./database/transactions.json"
 
     def __fetch_json_data(self, user_id: int):
         try:
