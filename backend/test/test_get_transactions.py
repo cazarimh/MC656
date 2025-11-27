@@ -68,9 +68,8 @@ def test_no_transactions(test_client):
 
     response = test_client.get(f"/{user["user"]["id"]}/transactions")
 
-    assert response.json() == []
     assert response.status_code == 200
-    # assert response.json() == []
+    assert response.json() == []
 
 def test_with_transactions(test_client, mock_user_and_transactions):
     '''
