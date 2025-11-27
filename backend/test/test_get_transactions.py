@@ -59,17 +59,18 @@ def test_unregistered_user(test_client, mock_user_and_transactions):
 
 ###################     TESTES DE TRANSAÇÕES   ###################
 
-def test_no_transactions(test_client, mock_user_and_transactions):
+def test_no_transactions(test_client):
     '''
     Testa se o sistema retorna uma lista vazia para um usuário cadastrado e sem transações
     '''
     user_response = test_client.post("/users", json={"name": "Ciclano Testador", "email": "emailsucess@teste.com", "password": "Senha@Forte123"})
     user = user_response.json()
 
-    response = test_client.get(f"/{user['user']['id']}/transactions/")
+    response = test_client.get(f"/{user["user"]["id"]}/transactions")
 
-    assert response.status_code == 200
     assert response.json() == []
+    assert response.status_code == 200
+    # assert response.json() == []
 
 def test_with_transactions(test_client, mock_user_and_transactions):
     '''
