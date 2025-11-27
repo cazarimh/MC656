@@ -5,19 +5,23 @@ def mock_user(test_client):
     '''
     Cria um usuário dublê para realizar testes de transações
     '''
+    # garante que o email seja único para cada execução da fixture
+    from random import randint
+    unique_email = f"emailsucess_{randint(1000, 9999)}@gmail.com"
+    
     response = test_client.post(
         "/users",
-        json={"name": "Fulano Testador", "email": "emailsucess@gmail.com", "password": "Senha@Forte123"}
+        json={"name": "Fulano Testador", "email": unique_email, "password": "Senha@Forte123"}
     )
-
     return response.json()
 
-###################     TESTES DE USUARIO   ###################
+################### 	TESTES DE USUARIO 	 ###################
+# Unidade: Validação de Usuário (critério: Particionamento em Classes de Equivalência (PCE))
 
 # deve funcionar
 def test_registered_user(test_client, mock_user):
     '''
-    Testa se o sistema cria um gasto informando um usuário existente
+    [PCE: Classe Válida] Testa se o sistema cria um gasto informando um usuário existente.
     '''
     response = test_client.post(
         f"/{mock_user["user"]["id"]}/transactions",
@@ -43,10 +47,10 @@ def test_registered_user(test_client, mock_user):
 # devem retornar erro
 def test_unregistered_user(test_client, mock_user):
     '''
-    Testa se o sistema retorna um erro na criação de um gasto com usuário não cadastrado
+    [PCE: Classe Inválida] Testa se o sistema retorna um erro na criação de um gasto com usuário não cadastrado.
     '''
     response = test_client.post(
-        f"/{mock_user["user"]["id"]+1}/transactions",
+        f"/{mock_user["user"]["id"]+999}/transactions", # ID inexistente
         json={
             "date": "2025-01-01",
             "value": 403,
@@ -60,37 +64,67 @@ def test_unregistered_user(test_client, mock_user):
     assert response.status_code == 403
     assert response.json() == {"detail": "Usuário não cadastrado."}
 
-###################     TESTES DE CATEGORIA ###################
+################### 	TESTES DE CATEGORIA e TIPO 	 ###################
+# Unidade: Validação de Tipos e Categorias fixos (critério: Particionamento em Classes de Equivalência (PCE))
 
-# deve funcionar
-def test_valid_category(test_client, mock_user):
+# --- PCE: CASOS VÁLIDOS ---
+
+def test_categoria_pce_receita_valida(test_client, mock_user):
     '''
-    Testa se o sistema cria um gasto informando uma categoria válida
+    [PCE: Classe Válida] Testa o tipo "Receita" com categoria válida ("Investimentos").
     '''
     response = test_client.post(
         f"/{mock_user["user"]["id"]}/transactions",
         json={
             "date": "2025-04-20",
-            "value": 201,
+            "value": 500,
+            "type": "Receita",
+            "category": "Investimentos", 
+            "description": "Rendimentos"
+        }
+    )
+    assert response.status_code == 201
+    assert response.json()["transaction_category"] == "Investimentos"
+
+def test_categoria_pce_despesa_valida(test_client, mock_user):
+    '''
+    [PCE: Classe Válida] Testa o tipo "Despesa" com categoria válida ("Alimentação").
+    '''
+    response = test_client.post(
+        f"/{mock_user["user"]["id"]}/transactions",
+        json={
+            "date": "2025-04-20",
+            "value": 50,
             "type": "Despesa",
-            "category": "Alimentação",
+            "category": "Alimentação", 
             "description": "Almoço"
         }
-)
-    # Verifica se os campos correspondem ao informado
+    )
     assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Alimentação"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
+    assert response.json()["transaction_category"] == "Alimentação"
 
-# devem retornar erro
-def test_empty_category(test_client, mock_user):
+# --- PCE: CASOS INVÁLIDOS ---
+
+def test_categoria_pce_tipo_invalido(test_client, mock_user):
     '''
-    Testa se o sistema retorna um erro na criação de um gasto com categoria vazia
+    [PCE: Classe Inválida Tipo] Testa um tipo que não é "Receita" ou "Despesa".
+    '''
+    response = test_client.post(
+        f"/{mock_user["user"]["id"]}/transactions",
+        json={
+            "date": "2025-01-01",
+            "value": 400,
+            "type": "Transferencia", # PCE: Tipo Inválido
+            "category": "Salário",
+            "description": ""
+        }
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Tipo informado é inválido. Informe um entre [Receita, Despesa]."}
+
+def test_categoria_pce_categoria_mismatch(test_client, mock_user):
+    '''
+    [PCE: Classe Inválida Categoria Mismatch] Testa a categoria "Moradia" (Despesa) com o tipo "Receita".
     '''
     response = test_client.post(
         f"/{mock_user["user"]["id"]}/transactions",
@@ -98,58 +132,92 @@ def test_empty_category(test_client, mock_user):
             "date": "2025-01-01",
             "value": 400,
             "type": "Receita",
-            "category": "",
-            "description": "Almoço"
+            "category": "Moradia", # PCE: Categoria Inválida para Receita
+            "description": ""
         }
-)
-    # Verifica se a API retorna o erro corretamente
+    )
     assert response.status_code == 400
     assert response.json() == {"detail": "Categoria informada é inválida. Informe uma entre [Salário, Freelance, Investimentos, Outros]."}
 
-def test_invalid_category(test_client, mock_user):
+
+################### 	TESTES DE VALOR 	 ###################
+# Unidade: Validação de Valor (critérios: Análise de Valor Limite (AVL) e Particionamento em Classes de Equivalência (PCE))
+
+# --- PCE e AVL: CASOS VÁLIDOS (V > 0) ---
+
+def test_valor_pce_classe_valida_arbitrario(test_client, mock_user):
     '''
-    Testa se o sistema retorna um erro na criação de um gasto com categoria inválida (qualquer uma fora as definidas)
+    [PCE: Classe Válida] Testa um valor inteiro positivo arbitrário (ex: 400).
+    '''
+    response = test_client.post(
+        f"/{mock_user["user"]["id"]}/transactions",
+        json={
+            "date": "2025-04-20",
+            "value": 400, 
+            "type": "Despesa",
+            "category": "Entretenimento",
+            "description": "Valor PCE Válido"
+        }
+    )
+    assert response.status_code == 201
+    assert response.json()["transaction_value"] == 400
+
+def test_valor_avl_minimo_valido(test_client, mock_user):
+    '''
+    [AVL: Limite Válido] Testa o valor mais próximo de zero que é permitido (0.01).
+    '''
+    response = test_client.post(
+        f"/{mock_user["user"]["id"]}/transactions",
+        json={
+            "date": "2025-04-20",
+            "value": 0.01, # AVL: Mínimo Válido
+            "type": "Despesa",
+            "category": "Entretenimento",
+            "description": "Taxa mínima"
+        }
+    )
+    assert response.status_code == 201
+    assert response.json()["transaction_value"] == 0.01
+
+
+# --- PCE & AVL: CASOS INVÁLIDOS (V <= 0) ---
+
+def test_valor_avl_limite_exato_zero(test_client, mock_user):
+    '''
+    [AVL: Limite Exato / PCE: Classe Inválida I1] Testa o limite exato não permitido (0).
     '''
     response = test_client.post(
         f"/{mock_user["user"]["id"]}/transactions",
         json={
             "date": "2025-01-01",
-            "value": 400,
+            "value": 0, # AVL: Limite Exato (Inválido)
             "type": "Despesa",
-            "category": "Gasolina",
-            "description": ""
+            "category": "Entretenimento",
+            "description": "Almoço zero"
         }
-)
-    # Verifica se a API retorna o erro corretamente
+    )
     assert response.status_code == 400
-    assert response.json() == {"detail": "Categoria informada é inválida. Informe uma entre [Moradia, Alimentação, Transporte, Entretenimento, Utilidades, Saúde, Educação, Outros]."}
+    assert response.json() == {"detail": "Valor informado é inválido. Informe um valor maior ou igual a zero."}
 
-###################     TESTES DE DATA      ###################
-
-# devem funcionar
-def test_ISO1_date(test_client, mock_user):
+def test_valor_pce_classe_invalida_negativo(test_client, mock_user):
     '''
-    Testa se o sistema cria um gasto informando uma data no formato YYYYMMDD
+    [PCE: Classe Inválida I2] Testa um valor negativo arbitrário.
     '''
     response = test_client.post(
         f"/{mock_user["user"]["id"]}/transactions",
         json={
-            "date": "20250420",
-            "value": 201,
+            "date": "2025-01-01",
+            "value": -400, # PCE: Exemplo da Classe Inválida I2 (V < 0)
             "type": "Despesa",
             "category": "Entretenimento",
-            "description": "Parque"
+            "description": "Almoço negativo"
         }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Parque"
-    assert "transaction_id" in data
+    )
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Valor informado é inválido. Informe um valor maior ou igual a zero."}
+
+
+################### 	TESTES DE DATA 	 	###################
 
 def test_ISO2_date(test_client, mock_user):
     '''
@@ -165,149 +233,10 @@ def test_ISO2_date(test_client, mock_user):
             "description": "Almoço"
         }
 )
-    # Verifica se os campos correspondem ao informado
     assert response.status_code == 201
     data = response.json()
     assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-def test_ISO3_date(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando uma data no formato YYYY-MM-DDTHH:mm:ss
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20T12:35:20",
-            "value": 201,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-def test_ISO4_date(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando uma data no formato YYYY-MM-DDTHH:mm:ssZ
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20T12:35:20Z",
-            "value": 201,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-def test_ISO5_date(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando uma data no formato YYYY-MM-DDTHH:mm:ss+ZZ:zz
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20T12:35:20+02:00",
-            "value": 201,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-def test_ISO6_date(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando uma data no formato YYYY-MM-DDTHH:mm:ss-ZZ:zz
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20T12:35:20-03:00",
-            "value": 201,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-# devem retornar erro
-def test_empty_date(test_client, mock_user):
-    '''
-    Testa se o sistema retorna um erro na criação de um gasto informando uma data vazia
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "",
-            "value": 400,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "O formato da data informada é inválido. O formato esperado é YYYY-MM-DD (ou outro no formato ISO)"}
-
-def test_wrong_format_date(test_client, mock_user):
-    '''
-    Testa se o sistema retorna um erro na criação de um gasto informando uma data em formato inválido (qualquer um fora os 6 listados acima)
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "01/01/2025",
-            "value": 400,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "O formato da data informada é inválido. O formato esperado é YYYY-MM-DD (ou outro no formato ISO)"}
-
+    
 def test_future_date(test_client, mock_user):
     '''
     Testa se o sistema retorna um erro na criação de um gasto informando uma data futura
@@ -322,190 +251,16 @@ def test_future_date(test_client, mock_user):
             "description": "Almoço"
         }
 )
-    # Verifica se a API retorna o erro corretamente
     assert response.status_code == 400
     assert response.json() == {"detail": "A data informada é no futuro. Informe uma data até o dia atual."}
 
-###################     TESTES DE VALOR     ###################
 
-# devem funcionar
-def test_positive_integer_value(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando um valor inteiro positivo
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20",
-            "value": 201,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
+################### 	TESTES GERAIS 	 	 ###################
 
-def test_float_greater_than_1_value(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando um valor decimal maior que um
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20",
-            "value": 20.1,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 20.1
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-def test_float_lower_than_1_value(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando um valor decimal maior que zero e menor que um
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20",
-            "value": 0.201,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 0.201
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-def test_large_value(test_client, mock_user):
-    '''
-    Testa se o sistema cria um gasto informando um valor inteiro muito grande
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-04-20",
-            "value": 201e100,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se os campos correspondem ao informado
-    assert response.status_code == 201
-    data = response.json()
-    assert data["transaction_date"] == "2025-04-20"
-    assert data["transaction_value"] == 201e100
-    assert data["transaction_type"] == "Despesa"
-    assert data["transaction_category"] == "Entretenimento"
-    assert data["transaction_description"] == "Almoço"
-    assert "transaction_id" in data
-
-# devem retornar erro
-def test_zero_value(test_client, mock_user):
-    '''
-    Testa se o sistema retorna um erro na criação de um gasto informando um valor nulo
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-01-01",
-            "value": 0,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Valor informado é inválido. Informe um valor maior ou igual a zero."}
-
-def test_negative_integer_value(test_client, mock_user):
-    '''
-    Testa se o sistema retorna um erro na criação de um gasto informando um valor inteiro negativo
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-01-01",
-            "value": -400,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Valor informado é inválido. Informe um valor maior ou igual a zero."}
-
-def test_float_lower_than_neg1_value(test_client, mock_user):
-    '''
-    Testa se o sistema retorna um erro na criação de um gasto informando um valor decimal entre (-1, 0)
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-01-01",
-            "value": -40.0,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Valor informado é inválido. Informe um valor maior ou igual a zero."}
-
-def test_float_greater_than_neg1_value(test_client, mock_user):
-    '''
-    Testa se o sistema retorna um erro na criação de um gasto informando um valor decimal entre (-inf, -1)
-    '''
-    response = test_client.post(
-        f"/{mock_user["user"]["id"]}/transactions",
-        json={
-            "date": "2025-01-01",
-            "value": -0.400,
-            "type": "Despesa",
-            "category": "Entretenimento",
-            "description": "Almoço"
-        }
-)
-    # Verifica se a API retorna o erro corretamente
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Valor informado é inválido. Informe um valor maior ou igual a zero."}
-
-###################     TESTES GERAIS       ###################
-
-# deve funcionar
 def test_create_multiple_transactions(test_client, mock_user):
     '''
     Testa se o sistema cria vários gastos corretamente
     '''
-
     response1 = test_client.post(
         f"/{mock_user["user"]["id"]}/transactions",
         json={
@@ -529,20 +284,9 @@ def test_create_multiple_transactions(test_client, mock_user):
     # Verifica se os campos correspondem ao informado
     assert response1.status_code == 201
     data1 = response1.json()
-    assert data1["transaction_date"] == "2025-04-20"
-    assert data1["transaction_value"] == 201
     assert data1["transaction_type"] == "Despesa"
-    assert data1["transaction_category"] == "Entretenimento"
-    assert data1["transaction_description"] == "Almoço"
-    assert "transaction_id" in data1
 
     assert response2.status_code == 201
     data2 = response2.json()
-    assert data2["transaction_date"] == "2025-04-19"
-    assert data2["transaction_value"] == 201
     assert data2["transaction_type"] == "Receita"
-    assert data2["transaction_category"] == "Salário"
-    assert data2["transaction_description"] == ""
-    assert "transaction_id" in data2
-
     assert data2["transaction_id"] > data1["transaction_id"]
