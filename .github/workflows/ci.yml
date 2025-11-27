@@ -33,4 +33,4 @@ jobs:
       - name: 4. Rodar Testes Automatizados (Etapa de Teste)
         run: |
           cp .env.example .env
-          pytest -vv --log-cli-level=INFO
+          pytest -vv --disable-warnings
