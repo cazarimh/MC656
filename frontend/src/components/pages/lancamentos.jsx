@@ -347,6 +347,9 @@ export default function Lancamentos() {
                     <p className="transaction-date">
                       {formatDateDisplay(t.transaction_date)}
                     </p>
+                    <p className="transaction-description">
+                      {t.transaction_description}
+                    </p>
                   </div>
 
                   <div className="transaction-actions">
